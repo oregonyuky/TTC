@@ -168,17 +168,20 @@ namespace ProcessamentoImagens
                 {
                     for(int j = width - 1; j >= 0; j--)
                     {
-                        int aux = src + (i * bitmapDataSrc.Stride) + (j * pixelSize);
+                        byte* aux = src + (i * bitmapDataSrc.Stride) + (j * pixelSize);
                         b = *(src1++); //está armazenado dessa forma: b g r 
                         g = *(src1++);
                         r = *(src1++);
 
-                        *(dst++) = (byte)(255 - b);
-                        *(dst++) = (byte)(255 - g);
-                        *(dst++) = (byte)(255 - r);
+                        *(dst++) = (byte)(b);
+                        *(dst++) = (byte)(g);
+                        *(dst++) = (byte)(r);
                     }
+                    dst += padding;
                 }
             }
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            imageBitmapDest.UnlockBits(bitmapDataDst);
         }
     }
 }
