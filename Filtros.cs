@@ -249,8 +249,59 @@ namespace ProcessamentoImagens
             imageBitmapDest.UnlockBits(bitmapDataDest);
         }
         public static void rotacionar_90(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bitmapDataDest = imageBitmapDest.LockBits(new Rectangle(0,0,height,width), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe{
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDest.Scan0.ToPointer();
+                int b, g, r;
+                for(int y = 0; y < height; y++){
+                    for(int x = 0; x < width; x++){
+                        byte* auxSrc = src + (y * bitmapDataSrc.Stride) + (x * pixelSize);
+                        int novoX = height - 1 - y;
+                        int novoY = x;
+                        byte* auxDst = dst + (novoY * bitmapDataDest.Stride) + (novoX * pixelSize);
+                        b = *(auxSrc++);
+                        g = *(auxSrc++);
+                        r = *(auxSrc++);
+                        *(auxDst++) = (byte)b;
+                        *(auxDst++) = (byte)g;
+                        *(auxDst++) = (byte)r;
+                    }
+                }
+            }
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            imageBitmapDest.UnlockBits(bitmapDataDest);
         }
         public static void inverterVermelhoComAzul(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bds = imageBitmapSrc.LockBits(new Rectangle(0,0,width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bdd = imageBitmapDest.LockBits(new Rectangle(0,0,width, height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe{
+                byte* src = (byte*)bds.Scan0.ToPointer();
+                byte* dst = (byte*)bdd.Scan0.ToPointer();
+                int padding = bds.Stride - (width * pixelSize);
+                int b, g, r;
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bds.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(dst++) = (byte)r;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)b;
+                    }
+                    dst += padding;
+                }
+            }
+            imageBitmapSrc.UnlockBits(bds);
+            imageBitmapDest.UnlockBits(bdd);
         }
     }
 }

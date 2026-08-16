@@ -97,7 +97,7 @@ namespace ProcessamentoImagens
 
         private void btnRotacao90_Click(object sender, EventArgs e)
         {
-            Bitmap imgDest = new Bitmap(image);
+            Bitmap imgDest = new Bitmap(image.Height, image.Width, PixelFormat.Format24bppRgb);
             imageBitmap = (Bitmap)image;
             Filtros.rotacionar_90(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
