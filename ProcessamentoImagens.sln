@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessamentoImagens", "ProcessamentoImagens\ProcessamentoImagens.csproj", "{62FFB5F4-39D7-491B-B53A-8266E2053D1B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessamentoImagens", "ProcessamentoImagens.csproj", "{62FFB5F4-39D7-491B-B53A-8266E2053D1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

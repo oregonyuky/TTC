@@ -42,6 +42,11 @@
             this.btnPretoBranco = new System.Windows.Forms.Button();
             this.btnRotacao90 = new System.Windows.Forms.Button();
             this.btnInverterVermelhoComAzul = new System.Windows.Forms.Button();
+            this.btnSepararRed = new System.Windows.Forms.Button();
+            this.btnEspelharDiagonal = new System.Windows.Forms.Button();
+            this.btnDividirImagem = new System.Windows.Forms.Button();
+            this.btnSepararGreen = new System.Windows.Forms.Button();
+            this.btnSepararBlue = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg2)).BeginInit();
             this.SuspendLayout();
@@ -51,7 +56,7 @@
             this.pictBoxImg1.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.pictBoxImg1.Location = new System.Drawing.Point(5, 6);
             this.pictBoxImg1.Name = "pictBoxImg1";
-            this.pictBoxImg1.Size = new System.Drawing.Size(600, 500);
+            this.pictBoxImg1.Size = new System.Drawing.Size(600, 462);
             this.pictBoxImg1.TabIndex = 102;
             this.pictBoxImg1.TabStop = false;
             // 
@@ -60,15 +65,15 @@
             this.pictBoxImg2.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.pictBoxImg2.Location = new System.Drawing.Point(611, 6);
             this.pictBoxImg2.Name = "pictBoxImg2";
-            this.pictBoxImg2.Size = new System.Drawing.Size(600, 500);
+            this.pictBoxImg2.Size = new System.Drawing.Size(600, 462);
             this.pictBoxImg2.TabIndex = 105;
             this.pictBoxImg2.TabStop = false;
             // 
             // btnAbrirImagem
             // 
-            this.btnAbrirImagem.Location = new System.Drawing.Point(5, 512);
+            this.btnAbrirImagem.Location = new System.Drawing.Point(5, 473);
             this.btnAbrirImagem.Name = "btnAbrirImagem";
-            this.btnAbrirImagem.Size = new System.Drawing.Size(101, 23);
+            this.btnAbrirImagem.Size = new System.Drawing.Size(101, 21);
             this.btnAbrirImagem.TabIndex = 106;
             this.btnAbrirImagem.Text = "Abrir Imagem";
             this.btnAbrirImagem.UseVisualStyleBackColor = true;
@@ -76,9 +81,9 @@
             // 
             // btnLimpar
             // 
-            this.btnLimpar.Location = new System.Drawing.Point(112, 512);
+            this.btnLimpar.Location = new System.Drawing.Point(5, 501);
             this.btnLimpar.Name = "btnLimpar";
-            this.btnLimpar.Size = new System.Drawing.Size(101, 23);
+            this.btnLimpar.Size = new System.Drawing.Size(101, 21);
             this.btnLimpar.TabIndex = 107;
             this.btnLimpar.Text = "Limpar";
             this.btnLimpar.UseVisualStyleBackColor = true;
@@ -86,9 +91,9 @@
             // 
             // btnLuminanciaSemDMA
             // 
-            this.btnLuminanciaSemDMA.Location = new System.Drawing.Point(219, 512);
+            this.btnLuminanciaSemDMA.Location = new System.Drawing.Point(166, 475);
             this.btnLuminanciaSemDMA.Name = "btnLuminanciaSemDMA";
-            this.btnLuminanciaSemDMA.Size = new System.Drawing.Size(208, 23);
+            this.btnLuminanciaSemDMA.Size = new System.Drawing.Size(151, 21);
             this.btnLuminanciaSemDMA.TabIndex = 108;
             this.btnLuminanciaSemDMA.Text = "Luminância sem DMA";
             this.btnLuminanciaSemDMA.UseVisualStyleBackColor = true;
@@ -96,9 +101,9 @@
             // 
             // btnLuminanciaComDMA
             // 
-            this.btnLuminanciaComDMA.Location = new System.Drawing.Point(219, 541);
+            this.btnLuminanciaComDMA.Location = new System.Drawing.Point(166, 500);
             this.btnLuminanciaComDMA.Name = "btnLuminanciaComDMA";
-            this.btnLuminanciaComDMA.Size = new System.Drawing.Size(208, 23);
+            this.btnLuminanciaComDMA.Size = new System.Drawing.Size(151, 21);
             this.btnLuminanciaComDMA.TabIndex = 109;
             this.btnLuminanciaComDMA.Text = "Luminância com DMA";
             this.btnLuminanciaComDMA.UseVisualStyleBackColor = true;
@@ -106,9 +111,9 @@
             // 
             // btnNegativoComDMA
             // 
-            this.btnNegativoComDMA.Location = new System.Drawing.Point(433, 541);
+            this.btnNegativoComDMA.Location = new System.Drawing.Point(323, 500);
             this.btnNegativoComDMA.Name = "btnNegativoComDMA";
-            this.btnNegativoComDMA.Size = new System.Drawing.Size(208, 23);
+            this.btnNegativoComDMA.Size = new System.Drawing.Size(125, 21);
             this.btnNegativoComDMA.TabIndex = 111;
             this.btnNegativoComDMA.Text = "Negativo com DMA";
             this.btnNegativoComDMA.UseVisualStyleBackColor = true;
@@ -116,9 +121,9 @@
             // 
             // btnNegativoSemDMA
             // 
-            this.btnNegativoSemDMA.Location = new System.Drawing.Point(433, 512);
+            this.btnNegativoSemDMA.Location = new System.Drawing.Point(323, 475);
             this.btnNegativoSemDMA.Name = "btnNegativoSemDMA";
-            this.btnNegativoSemDMA.Size = new System.Drawing.Size(208, 23);
+            this.btnNegativoSemDMA.Size = new System.Drawing.Size(125, 21);
             this.btnNegativoSemDMA.TabIndex = 110;
             this.btnNegativoSemDMA.Text = "Negativo sem DMA";
             this.btnNegativoSemDMA.UseVisualStyleBackColor = true;
@@ -126,9 +131,9 @@
             // 
             // btnEspelharHorizontal
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(647, 512);
+            this.btnEspelharHorizontal.Location = new System.Drawing.Point(454, 475);
             this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
-            this.btnEspelharHorizontal.Size = new System.Drawing.Size(208, 23);
+            this.btnEspelharHorizontal.Size = new System.Drawing.Size(125, 21);
             this.btnEspelharHorizontal.TabIndex = 112;
             this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
             this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
@@ -136,9 +141,9 @@
             // 
             // btnEspelharVertical
             // 
-            this.btnEspelharVertical.Location = new System.Drawing.Point(647, 541);
+            this.btnEspelharVertical.Location = new System.Drawing.Point(454, 500);
             this.btnEspelharVertical.Name = "btnEspelharVertical";
-            this.btnEspelharVertical.Size = new System.Drawing.Size(208, 23);
+            this.btnEspelharVertical.Size = new System.Drawing.Size(125, 21);
             this.btnEspelharVertical.TabIndex = 113;
             this.btnEspelharVertical.Text = "Espelhar Vertical";
             this.btnEspelharVertical.UseVisualStyleBackColor = true;
@@ -146,9 +151,9 @@
             // 
             // btnPretoBranco
             // 
-            this.btnPretoBranco.Location = new System.Drawing.Point(861, 512);
+            this.btnPretoBranco.Location = new System.Drawing.Point(585, 475);
             this.btnPretoBranco.Name = "btnPretoBranco";
-            this.btnPretoBranco.Size = new System.Drawing.Size(208, 23);
+            this.btnPretoBranco.Size = new System.Drawing.Size(141, 21);
             this.btnPretoBranco.TabIndex = 114;
             this.btnPretoBranco.Text = "Preto e branco";
             this.btnPretoBranco.UseVisualStyleBackColor = true;
@@ -156,9 +161,9 @@
             // 
             // btnRotacao90
             // 
-            this.btnRotacao90.Location = new System.Drawing.Point(861, 541);
+            this.btnRotacao90.Location = new System.Drawing.Point(585, 500);
             this.btnRotacao90.Name = "btnRotacao90";
-            this.btnRotacao90.Size = new System.Drawing.Size(208, 23);
+            this.btnRotacao90.Size = new System.Drawing.Size(141, 21);
             this.btnRotacao90.TabIndex = 115;
             this.btnRotacao90.Text = "Rotacionar 90 graus";
             this.btnRotacao90.UseVisualStyleBackColor = true;
@@ -166,19 +171,74 @@
             // 
             // btnInverterVermelhoComAzul
             // 
-            this.btnInverterVermelhoComAzul.Location = new System.Drawing.Point(1075, 512);
+            this.btnInverterVermelhoComAzul.Location = new System.Drawing.Point(732, 474);
             this.btnInverterVermelhoComAzul.Name = "btnInverterVermelhoComAzul";
-            this.btnInverterVermelhoComAzul.Size = new System.Drawing.Size(136, 52);
+            this.btnInverterVermelhoComAzul.Size = new System.Drawing.Size(182, 21);
             this.btnInverterVermelhoComAzul.TabIndex = 116;
             this.btnInverterVermelhoComAzul.Text = "Inverter Vermelho Com Azul";
             this.btnInverterVermelhoComAzul.UseVisualStyleBackColor = true;
             this.btnInverterVermelhoComAzul.Click += new System.EventHandler(this.btnInverterVermelhoComAzul_Click);
             // 
+            // btnSepararRed
+            // 
+            this.btnSepararRed.Location = new System.Drawing.Point(732, 501);
+            this.btnSepararRed.Name = "btnSepararRed";
+            this.btnSepararRed.Size = new System.Drawing.Size(182, 21);
+            this.btnSepararRed.TabIndex = 117;
+            this.btnSepararRed.Text = "Separar Red";
+            this.btnSepararRed.UseVisualStyleBackColor = true;
+            this.btnSepararRed.Click += new System.EventHandler(this.btnSepararRed_Click);
+            // 
+            // btnEspelharDiagonal
+            // 
+            this.btnEspelharDiagonal.Location = new System.Drawing.Point(1042, 475);
+            this.btnEspelharDiagonal.Name = "btnEspelharDiagonal";
+            this.btnEspelharDiagonal.Size = new System.Drawing.Size(116, 20);
+            this.btnEspelharDiagonal.TabIndex = 118;
+            this.btnEspelharDiagonal.Text = "Espelhar Diagonal";
+            this.btnEspelharDiagonal.UseVisualStyleBackColor = true;
+            this.btnEspelharDiagonal.Click += new System.EventHandler(this.btnEspelharDiagonal_Click);
+            // 
+            // btnDividirImagem
+            // 
+            this.btnDividirImagem.Location = new System.Drawing.Point(1042, 501);
+            this.btnDividirImagem.Name = "btnDividirImagem";
+            this.btnDividirImagem.Size = new System.Drawing.Size(116, 21);
+            this.btnDividirImagem.TabIndex = 119;
+            this.btnDividirImagem.Text = "Dividir a Imagem";
+            this.btnDividirImagem.UseVisualStyleBackColor = true;
+            this.btnDividirImagem.Click += new System.EventHandler(this.btnDividirImagem_Click);
+            // 
+            // btnSepararGreen
+            // 
+            this.btnSepararGreen.Location = new System.Drawing.Point(920, 474);
+            this.btnSepararGreen.Name = "btnSepararGreen";
+            this.btnSepararGreen.Size = new System.Drawing.Size(116, 20);
+            this.btnSepararGreen.TabIndex = 120;
+            this.btnSepararGreen.Text = "Separar Green";
+            this.btnSepararGreen.UseVisualStyleBackColor = true;
+            this.btnSepararGreen.Click += new System.EventHandler(this.btnSepararGreen_Click);
+            // 
+            // btnSepararBlue
+            // 
+            this.btnSepararBlue.Location = new System.Drawing.Point(920, 502);
+            this.btnSepararBlue.Name = "btnSepararBlue";
+            this.btnSepararBlue.Size = new System.Drawing.Size(116, 20);
+            this.btnSepararBlue.TabIndex = 121;
+            this.btnSepararBlue.Text = "Separar Blue";
+            this.btnSepararBlue.UseVisualStyleBackColor = true;
+            this.btnSepararBlue.Click += new System.EventHandler(this.btnSepararBlue_Click);
+            // 
             // frmPrincipal
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1220, 608);
+            this.ClientSize = new System.Drawing.Size(1220, 561);
+            this.Controls.Add(this.btnSepararBlue);
+            this.Controls.Add(this.btnSepararGreen);
+            this.Controls.Add(this.btnDividirImagem);
+            this.Controls.Add(this.btnEspelharDiagonal);
+            this.Controls.Add(this.btnSepararRed);
             this.Controls.Add(this.btnInverterVermelhoComAzul);
             this.Controls.Add(this.btnRotacao90);
             this.Controls.Add(this.btnPretoBranco);
@@ -217,7 +277,11 @@
         private System.Windows.Forms.Button btnPretoBranco;
         private System.Windows.Forms.Button btnRotacao90;
         private System.Windows.Forms.Button btnInverterVermelhoComAzul;
-
+        private System.Windows.Forms.Button btnSepararRed;
+        private System.Windows.Forms.Button btnEspelharDiagonal;
+        private System.Windows.Forms.Button btnDividirImagem;
+        private System.Windows.Forms.Button btnSepararGreen;
+        private System.Windows.Forms.Button btnSepararBlue;
     }
 }
 

@@ -110,5 +110,45 @@ namespace ProcessamentoImagens
             Filtros.inverterVermelhoComAzul(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
+
+        private void btnSepararRed_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.separarRed(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnSepararGreen_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.separarGreen(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnSepararBlue_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.separarBlue(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnEspelharDiagonal_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image.Height, image.Width, PixelFormat.Format24bppRgb);
+            imageBitmap = (Bitmap)image;
+            Filtros.espelharDiagonal(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnDividirImagem_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.dividirImagem(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
     }
 }

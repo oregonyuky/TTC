@@ -303,5 +303,186 @@ namespace ProcessamentoImagens
             imageBitmapSrc.UnlockBits(bds);
             imageBitmapDest.UnlockBits(bdd);
         }
+        public static void separarRed(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe{
+                int padding = bmS.Stride - (width * pixelSize);
+                int b, r, g;
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        b = g = 0;
+                        *(dst++) = (byte)b;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)r;
+                    }
+                    dst += padding;
+                }
+
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void separarGreen(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe{
+                int padding = bmS.Stride - (width * pixelSize);
+                int b, r, g;
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        b = r = 0;
+                        *(dst++) = (byte)b;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)r;
+                    }
+                    dst += padding;
+                }
+
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void separarBlue(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe{
+                int padding = bmS.Stride - (width * pixelSize);
+                int b, r, g;
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        r = g = 0;
+                        *(dst++) = (byte)b;
+                        *(dst++) = (byte)g;
+                        *(dst++) = (byte)r;
+                    }
+                    dst += padding;
+                }
+
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void espelharDiagonal(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,height,width), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe{
+                int b, r, g;
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* auxN = dst + (j * bmD.Stride) + (i * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(auxN++) = (byte)b;
+                        *(auxN++) = (byte)g;
+                        *(auxN++) = (byte)r;
+                    }
+                }
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void dividirImagem(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width,height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe{
+                int b, r, g;
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                int h2 = height/2;
+                int w2 = width/2;
+                //Superior esquerdo → inferior direito
+                for(int i=0, h2N=height/2;i<h2;i++, h2N++){
+                    for(int j=0, w2N=width/2;j<w2;j++, w2N++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* auxN = dst + (h2N * bmD.Stride) + (w2N * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(auxN++) = (byte)b;
+                        *(auxN++) = (byte)g;
+                        *(auxN++) = (byte)r;
+                    }
+                }
+                //Superior direito → inferior esquerdo
+                for(int i=0, h2N=height/2;i<h2;i++, h2N++){
+                    for(int j=w2, w2N=0;j<width;j++, w2N++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* auxN = dst + (h2N * bmD.Stride) + (w2N * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(auxN++) = (byte)b;
+                        *(auxN++) = (byte)g;
+                        *(auxN++) = (byte)r;
+                    }
+                }
+                //Inferior esquerdo → superior direito
+                for(int i=h2, h2N=0;i<height;i++, h2N++){
+                    for(int j=0, w2N=w2;j<w2;j++, w2N++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* auxN = dst + (h2N * bmD.Stride) + (w2N * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(auxN++) = (byte)b;
+                        *(auxN++) = (byte)g;
+                        *(auxN++) = (byte)r;
+                    }
+                }
+                //Inferior direito → superior esquerdo
+                for(int i=h2, h2N=0;i<height;i++, h2N++){
+                    for(int j=w2, w2N=0;j<width;j++, w2N++){
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* auxN = dst + (h2N * bmD.Stride) + (w2N * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        *(auxN++) = (byte)b;
+                        *(auxN++) = (byte)g;
+                        *(auxN++) = (byte)r;
+                    }
+                }
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
     }
 }
