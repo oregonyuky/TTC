@@ -7,3 +7,13 @@ C:\Chico C\Chico 2015 - Semestre 1\Aulas\Aulas TTC\Aula 1\ProcessamentoImagens\P
 C:\Chico C\Chico 2015 - Semestre 1\Aulas\Aulas TTC\Aula 1\ProcessamentoImagens\ProcessamentoImagens\bin\Debug\ProcessamentoImagens.pdb
 C:\Chico C\Chico 2015 - Semestre 1\Aulas\Aulas TTC\Aula 1\ProcessamentoImagens\ProcessamentoImagens\obj\Debug\ProcessamentoImagens.exe
 C:\Chico C\Chico 2015 - Semestre 1\Aulas\Aulas TTC\Aula 1\ProcessamentoImagens\ProcessamentoImagens\obj\Debug\ProcessamentoImagens.pdb
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.csproj.AssemblyReference.cache
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.frmPrincipal.resources
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.Properties.Resources.resources
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.csproj.GenerateResource.cache
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.csproj.CoreCompileInputs.cache
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.exe
+C:\Users\felip\TTC\bin\Debug\ProcessamentoImagens.exe.config
+C:\Users\felip\TTC\bin\Debug\ProcessamentoImagens.exe
+C:\Users\felip\TTC\bin\Debug\ProcessamentoImagens.pdb
+C:\Users\felip\TTC\obj\Debug\ProcessamentoImagens.pdb

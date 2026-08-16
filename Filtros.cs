@@ -169,9 +169,9 @@ namespace ProcessamentoImagens
                     for(int j = width - 1; j >= 0; j--)
                     {
                         byte* aux = src + (i * bitmapDataSrc.Stride) + (j * pixelSize);
-                        b = *(src1++); //está armazenado dessa forma: b g r 
-                        g = *(src1++);
-                        r = *(src1++);
+                        b = *(aux++); //está armazenado dessa forma: b g r 
+                        g = *(aux++);
+                        r = *(aux++);
 
                         *(dst++) = (byte)(b);
                         *(dst++) = (byte)(g);
@@ -182,6 +182,75 @@ namespace ProcessamentoImagens
             }
             imageBitmapSrc.UnlockBits(bitmapDataSrc);
             imageBitmapDest.UnlockBits(bitmapDataDst);
+        }
+        public static void espelharVertical(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb );
+            BitmapData bitmapDataDst = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+            unsafe{
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDst.Scan0.ToPointer();
+                int b, g, r;
+                for(int i=height-1;i>=0;i--){
+                    for(int j=0;j<width;j++){
+                        byte *aux = src + (i * bitmapDataSrc.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+
+                        *(dst++) = (byte)(b);
+                        *(dst++) = (byte)(g);
+                        *(dst++) = (byte)(r);
+                    }
+                    dst += padding;
+                }
+            }
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            imageBitmapDest.UnlockBits(bitmapDataDst);
+        }
+        public static void pretoBranco(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            int pixelSize = 3;
+            BitmapData bitmapDataSrc = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bitmapDataDest = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            int padding = bitmapDataSrc.Stride - (width * pixelSize);
+            int b, g, r;
+            unsafe{
+                byte* src = (byte*)bitmapDataSrc.Scan0.ToPointer();
+                byte* dst = (byte*)bitmapDataDest.Scan0.ToPointer();
+                for(int i=0;i<height;i++){
+                    for(int j=0;j<width;j++){
+                        byte* aux = src + (i * bitmapDataSrc.Stride) + (j * pixelSize);
+                        b = *(aux++);
+                        g = *(aux++);
+                        r = *(aux++);
+                        int media = (b + g + r) / 3;
+                        if(media >= 128){
+                            b = 255;
+                            g = 255;
+                            r = 255;
+                        } else {
+                            b = 0;
+                            g = 0;
+                            r = 0;
+                        }
+                        *(dst++) = (byte)(b);
+                        *(dst++) = (byte)(g);
+                        *(dst++) = (byte)(r);
+                    }
+                    dst += padding;
+                }
+            }
+            imageBitmapSrc.UnlockBits(bitmapDataSrc);
+            imageBitmapDest.UnlockBits(bitmapDataDest);
+        }
+        public static void rotacionar_90(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+        }
+        public static void inverterVermelhoComAzul(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
         }
     }
 }

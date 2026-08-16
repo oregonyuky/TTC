@@ -132,53 +132,57 @@
             this.btnEspelharHorizontal.TabIndex = 112;
             this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
             this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
-            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal);
+            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal_Click);
             // 
             // btnEspelharVertical
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(647, 512);
-            this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
-            this.btnEspelharHorizontal.Size = new System.Drawing.Size(208, 23);
-            this.btnEspelharHorizontal.TabIndex = 112;
-            this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
-            this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
-            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal);
+            this.btnEspelharVertical.Location = new System.Drawing.Point(647, 541);
+            this.btnEspelharVertical.Name = "btnEspelharVertical";
+            this.btnEspelharVertical.Size = new System.Drawing.Size(208, 23);
+            this.btnEspelharVertical.TabIndex = 113;
+            this.btnEspelharVertical.Text = "Espelhar Vertical";
+            this.btnEspelharVertical.UseVisualStyleBackColor = true;
+            this.btnEspelharVertical.Click += new System.EventHandler(this.btnEspelharVertical_Click);
             // 
             // btnPretoBranco
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(647, 512);
-            this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
-            this.btnEspelharHorizontal.Size = new System.Drawing.Size(208, 23);
-            this.btnEspelharHorizontal.TabIndex = 112;
-            this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
-            this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
-            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal);
+            this.btnPretoBranco.Location = new System.Drawing.Point(861, 512);
+            this.btnPretoBranco.Name = "btnPretoBranco";
+            this.btnPretoBranco.Size = new System.Drawing.Size(208, 23);
+            this.btnPretoBranco.TabIndex = 114;
+            this.btnPretoBranco.Text = "Preto e branco";
+            this.btnPretoBranco.UseVisualStyleBackColor = true;
+            this.btnPretoBranco.Click += new System.EventHandler(this.btnPretoBranco_Click);
             // 
             // btnRotacao90
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(647, 512);
-            this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
-            this.btnEspelharHorizontal.Size = new System.Drawing.Size(208, 23);
-            this.btnEspelharHorizontal.TabIndex = 112;
-            this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
-            this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
-            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal);
+            this.btnRotacao90.Location = new System.Drawing.Point(861, 541);
+            this.btnRotacao90.Name = "btnRotacao90";
+            this.btnRotacao90.Size = new System.Drawing.Size(208, 23);
+            this.btnRotacao90.TabIndex = 115;
+            this.btnRotacao90.Text = "Rotacionar 90 graus";
+            this.btnRotacao90.UseVisualStyleBackColor = true;
+            this.btnRotacao90.Click += new System.EventHandler(this.btnRotacao90_Click);
             // 
             // btnInverterVermelhoComAzul
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(647, 512);
-            this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
-            this.btnEspelharHorizontal.Size = new System.Drawing.Size(208, 23);
-            this.btnEspelharHorizontal.TabIndex = 112;
-            this.btnEspelharHorizontal.Text = "Espelhar Horizontal";
-            this.btnEspelharHorizontal.UseVisualStyleBackColor = true;
-            this.btnEspelharHorizontal.Click += new System.EventHandler(this.btnEspelharHorizontal);
+            this.btnInverterVermelhoComAzul.Location = new System.Drawing.Point(1075, 512);
+            this.btnInverterVermelhoComAzul.Name = "btnInverterVermelhoComAzul";
+            this.btnInverterVermelhoComAzul.Size = new System.Drawing.Size(136, 52);
+            this.btnInverterVermelhoComAzul.TabIndex = 116;
+            this.btnInverterVermelhoComAzul.Text = "Inverter Vermelho Com Azul";
+            this.btnInverterVermelhoComAzul.UseVisualStyleBackColor = true;
+            this.btnInverterVermelhoComAzul.Click += new System.EventHandler(this.btnInverterVermelhoComAzul_Click);
             // 
             // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1220, 608);
+            this.Controls.Add(this.btnInverterVermelhoComAzul);
+            this.Controls.Add(this.btnRotacao90);
+            this.Controls.Add(this.btnPretoBranco);
+            this.Controls.Add(this.btnEspelharVertical);
             this.Controls.Add(this.btnEspelharHorizontal);
             this.Controls.Add(this.btnNegativoComDMA);
             this.Controls.Add(this.btnNegativoSemDMA);
@@ -209,6 +213,11 @@
         private System.Windows.Forms.Button btnNegativoComDMA;
         private System.Windows.Forms.Button btnNegativoSemDMA;
         private System.Windows.Forms.Button btnEspelharHorizontal;
+        private System.Windows.Forms.Button btnEspelharVertical;
+        private System.Windows.Forms.Button btnPretoBranco;
+        private System.Windows.Forms.Button btnRotacao90;
+        private System.Windows.Forms.Button btnInverterVermelhoComAzul;
+
     }
 }
 

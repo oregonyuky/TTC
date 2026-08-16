@@ -70,13 +70,45 @@ namespace ProcessamentoImagens
             pictBoxImg2.Image = imgDest;
         }
 
-        private void btnEspelharHorizontal(object sender, EventArgs e)
+        private void btnEspelharHorizontal_Click(object sender, EventArgs e)
         {
             Bitmap imgDest = new Bitmap(image);
             imageBitmap = (Bitmap)image;
             Filtros.espelharHorizontalDMA(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
 
+        }
+
+        private void btnEspelharVertical_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.espelharVertical(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnPretoBranco_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.pretoBranco(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnRotacao90_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.rotacionar_90(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnInverterVermelhoComAzul_Click(object sender, EventArgs e)
+        {
+            Bitmap imgDest = new Bitmap(image);
+            imageBitmap = (Bitmap)image;
+            Filtros.inverterVermelhoComAzul(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
         }
     }
 }
