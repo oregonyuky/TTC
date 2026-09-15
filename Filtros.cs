@@ -4,9 +4,18 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;  
 
 namespace ProcessamentoImagens
 {
+    public class ObjetoSegmentado
+    {
+        public int Numero { get; set; }
+        public int Area { get; set; }
+        public double Largura { get; set; }
+        public double Altura { get; set; }
+    }
+
     class Filtros
     {
         //sem acesso direto a memoria
@@ -483,6 +492,169 @@ namespace ProcessamentoImagens
             }
             imageBitmapSrc.UnlockBits(bmS);
             imageBitmapDest.UnlockBits(bmD);
+        }
+
+        public static Bitmap segmentar4Conectados(Bitmap imageBitmapSrc, out List<ObjetoSegmentado> objetos)
+        {
+            return segmentarConectados(imageBitmapSrc, false, out objetos);
+        }
+
+        public static Bitmap segmentar8Conectados(Bitmap imageBitmapSrc, out List<ObjetoSegmentado> objetos)
+        {
+            return segmentarConectados(imageBitmapSrc, true, out objetos);
+        }
+
+        private static Bitmap segmentarConectados(Bitmap imageBitmapSrc, bool usarOitoConectados, out List<ObjetoSegmentado> objetos)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            bool[,] visitado = new bool[width, height];
+            Bitmap imageBitmapDest = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            objetos = new List<ObjetoSegmentado>();
+
+            // --- Leitura rápida da imagem de origem para um array de bool ---
+            bool[,] pixelUm = lerPixelsComoBool(imageBitmapSrc);
+
+            // --- Buffer de saída em memória (preenchido em RAM, sem SetPixel) ---
+            BitmapData destData = imageBitmapDest.LockBits(
+                new Rectangle(0, 0, width, height),
+                ImageLockMode.WriteOnly,
+                PixelFormat.Format24bppRgb);
+
+            int strideDest = destData.Stride;
+            byte[] bufferDest = new byte[strideDest * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (visitado[x, y] || !pixelUm[x, y])
+                        continue;
+
+                    int numero = objetos.Count + 1;
+                    Queue<Point> fila = new Queue<Point>();
+                    List<Point> pixels = new List<Point>();
+                    int minX = x, maxX = x, minY = y, maxY = y;
+
+                    visitado[x, y] = true;
+                    fila.Enqueue(new Point(x, y));
+
+                    while (fila.Count > 0)
+                    {
+                        Point pixel = fila.Dequeue();
+                        pixels.Add(pixel);
+                        minX = Math.Min(minX, pixel.X);
+                        maxX = Math.Max(maxX, pixel.X);
+                        minY = Math.Min(minY, pixel.Y);
+                        maxY = Math.Max(maxY, pixel.Y);
+
+                        for (int deslocamentoY = -1; deslocamentoY <= 1; deslocamentoY++)
+                        {
+                            for (int deslocamentoX = -1; deslocamentoX <= 1; deslocamentoX++)
+                            {
+                                if ((deslocamentoX == 0 && deslocamentoY == 0) ||
+                                    (!usarOitoConectados && Math.Abs(deslocamentoX) + Math.Abs(deslocamentoY) != 1))
+                                    continue;
+
+                                int vizinhoX = pixel.X + deslocamentoX;
+                                int vizinhoY = pixel.Y + deslocamentoY;
+                                if (vizinhoX < 0 || vizinhoX >= width || vizinhoY < 0 || vizinhoY >= height ||
+                                    visitado[vizinhoX, vizinhoY] || !pixelUm[vizinhoX, vizinhoY])
+                                    continue;
+
+                                visitado[vizinhoX, vizinhoY] = true;
+                                fila.Enqueue(new Point(vizinhoX, vizinhoY));
+                            }
+                        }
+                    }
+
+                    Color corObjeto = obterCorObjeto(numero);
+                    foreach (Point pixel in pixels)
+                    {
+                        int offset = pixel.Y * strideDest + pixel.X * 3;
+                        bufferDest[offset]     = corObjeto.B;
+                        bufferDest[offset + 1] = corObjeto.G;
+                        bufferDest[offset + 2] = corObjeto.R;
+                    }
+
+                    objetos.Add(new ObjetoSegmentado
+                    {
+                        Numero = numero,
+                        Area = pixels.Count,
+                        // A distancia entre as coordenadas extremas recebe 1 para representar os dois pixels inclusivos.
+                        Largura = distanciaEuclidiana(minX, minY, maxX, minY) + 1,
+                        Altura = distanciaEuclidiana(minX, minY, minX, maxY) + 1
+                    });
+                }
+            }
+
+            Marshal.Copy(bufferDest, 0, destData.Scan0, bufferDest.Length);
+            imageBitmapDest.UnlockBits(destData);
+
+            return imageBitmapDest;
+        }
+
+        // Le a imagem inteira uma unica vez e devolve uma matriz de bool (true = pixel do objeto).
+        private static bool[,] lerPixelsComoBool(Bitmap imageBitmapSrc)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            bool[,] resultado = new bool[width, height];
+
+            BitmapData srcData = imageBitmapSrc.LockBits(
+                new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadOnly,
+                PixelFormat.Format24bppRgb);
+
+            int stride = srcData.Stride;
+            int bytesTotais = stride * height;
+            byte[] buffer = new byte[bytesTotais];
+            Marshal.Copy(srcData.Scan0, buffer, 0, bytesTotais);
+            imageBitmapSrc.UnlockBits(srcData);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int offset = y * stride + x * 3;
+                    byte b = buffer[offset];
+                    byte g = buffer[offset + 1];
+                    byte r = buffer[offset + 2];
+                    resultado[x, y] = ehPixelUm(r, g, b);
+                }
+            }
+
+            return resultado;
+        }
+
+        // No filtro preto-branco do projeto, preto (0) representa o objeto a ser segmentado (valor binario 1).
+        private static bool ehPixelUm(byte r, byte g, byte b)
+        {
+            return r < 128 && g < 128 && b < 128;
+        }
+
+        private static double distanciaEuclidiana(int x1, int y1, int x2, int y2)
+        {
+            return Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+        }
+
+        private static Color obterCorObjeto(int numero)
+        {
+            // A codificacao usa os tres canais para evitar repetir cores mesmo com muitos objetos.
+            int indice = numero - 1;
+            int vermelho = 32 + ((indice % 192) * 73 % 192);
+            int verde = 32 + (((indice / 192) % 192) * 73 % 192);
+            int azul = 32 + (((indice / (192 * 192)) % 192) * 73 % 192);
+            return Color.FromArgb(vermelho, verde, azul);
+        }
+        public static void ReduzirMetade(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width/2,height/2), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe{
+                
+            }
         }
     }
 }

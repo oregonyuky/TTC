@@ -93,7 +93,7 @@
             // 
             this.btnLuminanciaSemDMA.Location = new System.Drawing.Point(166, 475);
             this.btnLuminanciaSemDMA.Name = "btnLuminanciaSemDMA";
-            this.btnLuminanciaSemDMA.Size = new System.Drawing.Size(151, 21);
+            this.btnLuminanciaSemDMA.Size = new System.Drawing.Size(132, 21);
             this.btnLuminanciaSemDMA.TabIndex = 108;
             this.btnLuminanciaSemDMA.Text = "Luminância sem DMA";
             this.btnLuminanciaSemDMA.UseVisualStyleBackColor = true;
@@ -103,7 +103,7 @@
             // 
             this.btnLuminanciaComDMA.Location = new System.Drawing.Point(166, 500);
             this.btnLuminanciaComDMA.Name = "btnLuminanciaComDMA";
-            this.btnLuminanciaComDMA.Size = new System.Drawing.Size(151, 21);
+            this.btnLuminanciaComDMA.Size = new System.Drawing.Size(132, 21);
             this.btnLuminanciaComDMA.TabIndex = 109;
             this.btnLuminanciaComDMA.Text = "Luminância com DMA";
             this.btnLuminanciaComDMA.UseVisualStyleBackColor = true;
@@ -111,7 +111,7 @@
             // 
             // btnNegativoComDMA
             // 
-            this.btnNegativoComDMA.Location = new System.Drawing.Point(323, 500);
+            this.btnNegativoComDMA.Location = new System.Drawing.Point(304, 501);
             this.btnNegativoComDMA.Name = "btnNegativoComDMA";
             this.btnNegativoComDMA.Size = new System.Drawing.Size(125, 21);
             this.btnNegativoComDMA.TabIndex = 111;
@@ -121,7 +121,7 @@
             // 
             // btnNegativoSemDMA
             // 
-            this.btnNegativoSemDMA.Location = new System.Drawing.Point(323, 475);
+            this.btnNegativoSemDMA.Location = new System.Drawing.Point(304, 475);
             this.btnNegativoSemDMA.Name = "btnNegativoSemDMA";
             this.btnNegativoSemDMA.Size = new System.Drawing.Size(125, 21);
             this.btnNegativoSemDMA.TabIndex = 110;
@@ -131,7 +131,7 @@
             // 
             // btnEspelharHorizontal
             // 
-            this.btnEspelharHorizontal.Location = new System.Drawing.Point(454, 475);
+            this.btnEspelharHorizontal.Location = new System.Drawing.Point(435, 475);
             this.btnEspelharHorizontal.Name = "btnEspelharHorizontal";
             this.btnEspelharHorizontal.Size = new System.Drawing.Size(125, 21);
             this.btnEspelharHorizontal.TabIndex = 112;
@@ -141,7 +141,7 @@
             // 
             // btnEspelharVertical
             // 
-            this.btnEspelharVertical.Location = new System.Drawing.Point(454, 500);
+            this.btnEspelharVertical.Location = new System.Drawing.Point(435, 500);
             this.btnEspelharVertical.Name = "btnEspelharVertical";
             this.btnEspelharVertical.Size = new System.Drawing.Size(125, 21);
             this.btnEspelharVertical.TabIndex = 113;
@@ -151,7 +151,7 @@
             // 
             // btnPretoBranco
             // 
-            this.btnPretoBranco.Location = new System.Drawing.Point(585, 475);
+            this.btnPretoBranco.Location = new System.Drawing.Point(566, 475);
             this.btnPretoBranco.Name = "btnPretoBranco";
             this.btnPretoBranco.Size = new System.Drawing.Size(141, 21);
             this.btnPretoBranco.TabIndex = 114;
@@ -161,7 +161,7 @@
             // 
             // btnRotacao90
             // 
-            this.btnRotacao90.Location = new System.Drawing.Point(585, 500);
+            this.btnRotacao90.Location = new System.Drawing.Point(566, 500);
             this.btnRotacao90.Name = "btnRotacao90";
             this.btnRotacao90.Size = new System.Drawing.Size(141, 21);
             this.btnRotacao90.TabIndex = 115;
@@ -171,9 +171,9 @@
             // 
             // btnInverterVermelhoComAzul
             // 
-            this.btnInverterVermelhoComAzul.Location = new System.Drawing.Point(732, 474);
+            this.btnInverterVermelhoComAzul.Location = new System.Drawing.Point(713, 474);
             this.btnInverterVermelhoComAzul.Name = "btnInverterVermelhoComAzul";
-            this.btnInverterVermelhoComAzul.Size = new System.Drawing.Size(182, 21);
+            this.btnInverterVermelhoComAzul.Size = new System.Drawing.Size(153, 21);
             this.btnInverterVermelhoComAzul.TabIndex = 116;
             this.btnInverterVermelhoComAzul.Text = "Inverter Vermelho Com Azul";
             this.btnInverterVermelhoComAzul.UseVisualStyleBackColor = true;
@@ -181,9 +181,9 @@
             // 
             // btnSepararRed
             // 
-            this.btnSepararRed.Location = new System.Drawing.Point(732, 501);
+            this.btnSepararRed.Location = new System.Drawing.Point(713, 500);
             this.btnSepararRed.Name = "btnSepararRed";
-            this.btnSepararRed.Size = new System.Drawing.Size(182, 21);
+            this.btnSepararRed.Size = new System.Drawing.Size(153, 21);
             this.btnSepararRed.TabIndex = 117;
             this.btnSepararRed.Text = "Separar Red";
             this.btnSepararRed.UseVisualStyleBackColor = true;
@@ -191,7 +191,7 @@
             // 
             // btnEspelharDiagonal
             // 
-            this.btnEspelharDiagonal.Location = new System.Drawing.Point(1042, 475);
+            this.btnEspelharDiagonal.Location = new System.Drawing.Point(994, 476);
             this.btnEspelharDiagonal.Name = "btnEspelharDiagonal";
             this.btnEspelharDiagonal.Size = new System.Drawing.Size(116, 20);
             this.btnEspelharDiagonal.TabIndex = 118;
@@ -201,7 +201,7 @@
             // 
             // btnDividirImagem
             // 
-            this.btnDividirImagem.Location = new System.Drawing.Point(1042, 501);
+            this.btnDividirImagem.Location = new System.Drawing.Point(994, 502);
             this.btnDividirImagem.Name = "btnDividirImagem";
             this.btnDividirImagem.Size = new System.Drawing.Size(116, 21);
             this.btnDividirImagem.TabIndex = 119;
@@ -211,7 +211,7 @@
             // 
             // btnSepararGreen
             // 
-            this.btnSepararGreen.Location = new System.Drawing.Point(920, 474);
+            this.btnSepararGreen.Location = new System.Drawing.Point(872, 475);
             this.btnSepararGreen.Name = "btnSepararGreen";
             this.btnSepararGreen.Size = new System.Drawing.Size(116, 20);
             this.btnSepararGreen.TabIndex = 120;
@@ -221,7 +221,7 @@
             // 
             // btnSepararBlue
             // 
-            this.btnSepararBlue.Location = new System.Drawing.Point(920, 502);
+            this.btnSepararBlue.Location = new System.Drawing.Point(872, 502);
             this.btnSepararBlue.Name = "btnSepararBlue";
             this.btnSepararBlue.Size = new System.Drawing.Size(116, 20);
             this.btnSepararBlue.TabIndex = 121;

@@ -150,5 +150,21 @@ namespace ProcessamentoImagens
             Filtros.dividirImagem(imageBitmap, imgDest);
             pictBoxImg2.Image = imgDest;
         }
+
+        private void btnSegmentar4_Click(object sender, EventArgs e)
+        {
+            imageBitmap = (Bitmap)image;
+            List<ObjetoSegmentado> objetos;
+            Bitmap imgDest = Filtros.segmentar4Conectados(imageBitmap, out objetos);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnSegmentar8_Click(object sender, EventArgs e)
+        {
+            imageBitmap = (Bitmap)image;
+            List<ObjetoSegmentado> objetos;
+            Bitmap imgDest = Filtros.segmentar8Conectados(imageBitmap, out objetos);
+            pictBoxImg2.Image = imgDest;
+        }
     }
 }
