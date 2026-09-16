@@ -47,6 +47,10 @@
             this.btnDividirImagem = new System.Windows.Forms.Button();
             this.btnSepararGreen = new System.Windows.Forms.Button();
             this.btnSepararBlue = new System.Windows.Forms.Button();
+            this.btnSegmentar4 = new System.Windows.Forms.Button();
+            this.btnSegmentar8 = new System.Windows.Forms.Button();
+            this.btnReduzirTamanho = new System.Windows.Forms.Button();
+            this.btnReduzirResolucaoCinzaDadoValor = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg2)).BeginInit();
             this.SuspendLayout();
@@ -229,11 +233,55 @@
             this.btnSepararBlue.UseVisualStyleBackColor = true;
             this.btnSepararBlue.Click += new System.EventHandler(this.btnSepararBlue_Click);
             // 
+            // btnSegmentar4
+            // 
+            this.btnSegmentar4.Location = new System.Drawing.Point(5, 530);
+            this.btnSegmentar4.Name = "btnSegmentar4";
+            this.btnSegmentar4.Size = new System.Drawing.Size(160, 21);
+            this.btnSegmentar4.TabIndex = 122;
+            this.btnSegmentar4.Text = "Segmentar 4 conectados";
+            this.btnSegmentar4.UseVisualStyleBackColor = true;
+            this.btnSegmentar4.Click += new System.EventHandler(this.btnSegmentar4_Click);
+            // 
+            // btnSegmentar8
+            // 
+            this.btnSegmentar8.Location = new System.Drawing.Point(171, 530);
+            this.btnSegmentar8.Name = "btnSegmentar8";
+            this.btnSegmentar8.Size = new System.Drawing.Size(160, 21);
+            this.btnSegmentar8.TabIndex = 123;
+            this.btnSegmentar8.Text = "Segmentar 8 conectados";
+            this.btnSegmentar8.UseVisualStyleBackColor = true;
+            this.btnSegmentar8.Click += new System.EventHandler(this.btnSegmentar8_Click);
+            // 
+            // btnReduzirTamanho
+            // 
+            this.btnReduzirTamanho.Location = new System.Drawing.Point(337, 530);
+            this.btnReduzirTamanho.Name = "btnReduzirTamanho";
+            this.btnReduzirTamanho.Size = new System.Drawing.Size(160, 21);
+            this.btnReduzirTamanho.TabIndex = 124;
+            this.btnReduzirTamanho.Text = "Reduzir tamanho";
+            this.btnReduzirTamanho.UseVisualStyleBackColor = true;
+            this.btnReduzirTamanho.Click += new System.EventHandler(this.btnReduzirTamanho_Click);
+            // 
+            // btnReduzirResolucaoCinzaDadoValor
+            // 
+            this.btnReduzirResolucaoCinzaDadoValor.Location = new System.Drawing.Point(503, 530);
+            this.btnReduzirResolucaoCinzaDadoValor.Name = "btnReduzirResolucaoCinzaDadoValor";
+            this.btnReduzirResolucaoCinzaDadoValor.Size = new System.Drawing.Size(190, 21);
+            this.btnReduzirResolucaoCinzaDadoValor.TabIndex = 125;
+            this.btnReduzirResolucaoCinzaDadoValor.Text = "Reduzir resolução cinza";
+            this.btnReduzirResolucaoCinzaDadoValor.UseVisualStyleBackColor = true;
+            this.btnReduzirResolucaoCinzaDadoValor.Click += new System.EventHandler(this.btnReduzirResolucaoCinzaDadoValor_Click);
+            // 
             // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1220, 561);
+            this.Controls.Add(this.btnReduzirResolucaoCinzaDadoValor);
+            this.Controls.Add(this.btnReduzirTamanho);
+            this.Controls.Add(this.btnSegmentar8);
+            this.Controls.Add(this.btnSegmentar4);
             this.Controls.Add(this.btnSepararBlue);
             this.Controls.Add(this.btnSepararGreen);
             this.Controls.Add(this.btnDividirImagem);
@@ -282,6 +330,10 @@
         private System.Windows.Forms.Button btnDividirImagem;
         private System.Windows.Forms.Button btnSepararGreen;
         private System.Windows.Forms.Button btnSepararBlue;
+        private System.Windows.Forms.Button btnSegmentar4;
+        private System.Windows.Forms.Button btnSegmentar8;
+        private System.Windows.Forms.Button btnReduzirTamanho;
+        private System.Windows.Forms.Button btnReduzirResolucaoCinzaDadoValor;
     }
 }
 

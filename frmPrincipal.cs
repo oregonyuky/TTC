@@ -166,5 +166,23 @@ namespace ProcessamentoImagens
             Bitmap imgDest = Filtros.segmentar8Conectados(imageBitmap, out objetos);
             pictBoxImg2.Image = imgDest;
         }
+        private void btnReduzirTamanho_Click(object sender, EventArgs e)
+        {
+            if (image == null) return;
+            imageBitmap = new Bitmap(image);
+            Bitmap imgDest = new Bitmap(imageBitmap.Width / 2, imageBitmap.Height / 2, PixelFormat.Format24bppRgb);
+            Filtros.ReduzirMetadeDMA(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
+
+        private void btnReduzirResolucaoCinzaDadoValor_Click(object sender, EventArgs e)
+        {
+            if (image == null) return;
+            const int niveisDeCinza = 8;
+            imageBitmap = new Bitmap(image);
+            Bitmap imgDest = new Bitmap(imageBitmap.Width, imageBitmap.Height, PixelFormat.Format24bppRgb);
+            Filtros.ReduzirEscalaResolucaoCinzaDadoValorDMA(imageBitmap, imgDest, niveisDeCinza);
+            pictBoxImg2.Image = imgDest;
+        }
     }
 }

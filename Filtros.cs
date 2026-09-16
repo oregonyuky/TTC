@@ -647,15 +647,119 @@ namespace ProcessamentoImagens
             int azul = 32 + (((indice / (192 * 192)) % 192) * 73 % 192);
             return Color.FromArgb(vermelho, verde, azul);
         }
-        public static void ReduzirMetade(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+
+        public static void ReduzirMetadeDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
             int width = imageBitmapSrc.Width;
             int height = imageBitmapSrc.Height;
-            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0,0,width,height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0,0,width/2,height/2), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
-            unsafe{
-                
+            BitmapData bmS = imageBitmapSrc.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width / 2, height / 2), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe
+            {
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dest = (byte*)bmD.Scan0.ToPointer();
+                int strideS = bmS.Stride;
+                int strideD = bmD.Stride;
+                for (int y = 0; y < height / 2; y++)
+                {
+                    for (int x = 0; x < width / 2; x++)
+                    {
+                        int srcX = x * 2;
+                        int srcY = y * 2;
+                        byte* p1 = src + srcY * strideS + srcX * 3;
+                        byte* p2 = src + srcY * strideS + (srcX + 1) * 3;
+                        byte* p3 = src + (srcY + 1) * strideS + srcX * 3;
+                        byte* p4 = src + (srcY + 1) * strideS + (srcX + 1) * 3;
+                        byte blue = (byte)( (p1[0] + p2[0] + p3[0] + p4[0]) / 4);
+                        byte green = (byte)( (p1[1] + p2[1] + p3[1] + p4[1]) / 4);
+                        byte red = (byte)( (p1[2] + p2[2] + p3[2] + p4[2]) / 4);
+                        byte* pd = dest + y * strideD + x * 3;
+                        pd[0] = blue;
+                        pd[1] = green;
+                        pd[2] = red;
+                    }
+                }
+            }
+
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void ReduzirMetade(Bitmap imageBitmapSrc, Bitmap imageBitmapDest){
+            int height = imageBitmapSrc.Height;
+            int width = imageBitmapSrc.Width;
+            for(int i=0;i<height;i+=2){
+                for(int j=0;j<width;j+=2){
+                    Color cor1 = imageBitmapSrc.GetPixel(j, i);
+                    Color cor2 = imageBitmapSrc.GetPixel(j,i+1);
+                    Color cor3 = imageBitmapSrc.GetPixel(j+1,i);
+                    Color cor4 = imageBitmapSrc.GetPixel(j+1,i+1);
+                    int r = (cor1.R + cor2.R + cor3.R + cor4.R)/4;
+                    int g = (cor1.G + cor2.G + cor3.G + cor4.G)/4;
+                    int b = (cor1.B + cor2.B + cor3.B + cor4.B)/4;
+                    Color newCor = Color.FromArgb(r, g, b);
+                    imageBitmapDest.SetPixel(j/2, i/2, newCor);
+                }
             }
         }
 
+
+        public static void ReduzirEscalaResolucaoCinzaDadoValorDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest, int valor)
+        {
+            int height = imageBitmapSrc.Height;
+            int width = imageBitmapDest.Width;
+            int pixelSize = 3;
+
+            BitmapData bmS = imageBitmapSrc.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
+            unsafe
+            {
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                int padding = bmD.Stride - width * pixelSize;
+                for (int i = 0; i < height; i++)
+                {
+                    for (int j = 0; j < width; j++)
+                    {
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        int b = *(aux++);
+                        int g = *(aux++);
+                        int r = *(aux++);
+                        int gr = (int)(r * 0.299 + g * 0.587 + b * 0.114);
+
+                        int novo = calcularNovoGr(gr, valor);
+
+                        *(dst++) = (byte)novo;
+                        *(dst++) = (byte)novo;
+                        *(dst++) = (byte)novo;
+                    }
+                    dst += padding;
+                }
+            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+        public static void ReduzirEscalaResolucaoCinzaDadoValor(Bitmap imageBitmapSrc, Bitmap imageBitmapDest, int valor){
+            int height = imageBitmapSrc.Height;
+            int width = imageBitmapSrc.Width;
+            for(int i=0;i<height;i++){
+                for(int j=0;j<width;j++){
+                    Color cor = imageBitmapSrc.GetPixel(j, i);
+                    int r = cor.R;
+                    int g = cor.G;
+                    int b = cor.B;
+                    int gr = (int)(r * 0.299 + g * 0.587 + b * 0.114);
+                    int novo = calcularNovoGr(gr, valor);
+                    Color newCor = Color.FromArgb(novo, novo, novo);
+                    imageBitmapDest.SetPixel(j, i, newCor);
+                }
+            }
+        }
+
+        public static int calcularNovoGr(int gr, int valor)
+        {
+            int i = 0;
+            while (gr >= i * 256 / valor) i++;
+            return (i - 1) * 255 / (valor - 1);
+        }
     }
 }
