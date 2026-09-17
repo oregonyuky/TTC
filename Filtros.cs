@@ -18,6 +18,7 @@ namespace ProcessamentoImagens
 
     class Filtros
     {
+        static int pixelSize = 3;
         //sem acesso direto a memoria
         public static void convert_to_gray(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
         {
@@ -909,6 +910,100 @@ namespace ProcessamentoImagens
                 getBGR(getByte(src, bmS, i, j), 'g'),
                 getBGR(getByte(src, bmS, i, j), 'r')
             );
+        }
+
+        public unsafe static byte* p0(int i, int j, BitmapData bd)
+        {
+            return (byte*)(i * bd.Stride) + ((j + 1) * pixelSize);
+        }
+        public unsafe static byte* p1(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i-1) * bd.Stride) + ((j + 1) * pixelSize);
+        }
+        public unsafe static byte* p2(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i-1) * bd.Stride) + (j * pixelSize);
+        }
+        public unsafe static byte* p3(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i-1) * bd.Stride) + ((j-1) * pixelSize);
+        }
+        public unsafe static byte* p4(int i, int j, BitmapData bd)
+        {
+            return (byte*)(i * bd.Stride) + ((j-1) * pixelSize);
+        }
+        public unsafe static byte* p5(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i+1) * bd.Stride) + ((j-1) * pixelSize);
+        }
+        public unsafe static byte* p6(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i+1) * bd.Stride) + (j * pixelSize);
+        }
+        public unsafe static byte* p7(int i, int j, BitmapData bd)
+        {
+            return (byte*)((i+1) * bd.Stride) + ((j+1) * pixelSize);
+        }
+
+        public unsafe static void binarizarEntrada(BitmapData bd)
+        {
+            int width = bd.Width;
+            int height = bd.Height;
+            byte* src = (byte*)bd.Scan0.ToPointer();
+            for(int i = 0; i < height; i++)
+            {
+                for(int j = 0; j < width; j++)
+                {
+                    byte* aux = src + (i*bd.Stride) + (j*pixelSize);
+                    int cor;
+                    if ((aux[0] + aux[1] + aux[2]) / 3 < 128) cor = 0;
+                    else cor = 255;
+                    *(aux++) = (byte)cor;
+                    *(aux++) = (byte)cor;
+                    *(aux++) = (byte)cor;
+                }
+            }
+        }
+        public unsafe static void branquearSaida(BitmapData bd)
+        {
+            int width = bd.Width;
+            int height = bd.Height;
+            byte* src = (byte*)bd.Scan0.ToPointer();
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    byte* aux = src + (i * bd.Stride) + (j * pixelSize);
+                    int cor = 255;
+                    *(aux++) = (byte)cor;
+                    *(aux++) = (byte)cor;
+                    *(aux++) = (byte)cor;
+                }
+            }
+        }
+        public static void contourFollowingDMA(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int width = imageBitmapSrc.Width;
+            int height = imageBitmapSrc.Height;
+            BitmapData bmS = imageBitmapSrc.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            int padding = bmS.Stride - (width * pixelSize);
+            List<int> direcoes = new List<int>();
+            Pilha p = new Pilha();
+            unsafe
+            {
+                byte* src = (byte*) bmS.Scan0.ToPointer();
+                byte* dst = (byte*)bmD.Scan0.ToPointer();
+                binarizarEntrada(bmS);
+                branquearSaida(bmD);
+                for(int i = 0; i < height; i++)
+                {
+                    for(int j = 0; j < width; j++)
+                    {
+                        byte* pixelAtual = src + i * bmS.Stride + j * pixelSize;
+                    }
+                }
+            }
         }
     }
 }

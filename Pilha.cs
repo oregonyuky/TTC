@@ -6,7 +6,31 @@ using System.Threading.Tasks;
 
 namespace ProcessamentoImagens
 {
-    internal class Pilha
+    internal unsafe class Pilha
     {
+        private No topo;
+
+        public Pilha()
+        {
+            this.topo = null;
+        }
+
+        public bool isEmpty()
+        {
+            return topo == null;
+        }
+
+        public void push(Info pixel)
+        {
+            No novoNo = new No(pixel, topo);
+            topo = novoNo;
+        }
+
+        public Info pop()
+        {
+            Info pixel = topo.getInfo();
+            topo = topo.getProx();
+            return pixel;
+        }
     }
 }
