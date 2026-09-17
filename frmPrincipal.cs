@@ -184,5 +184,17 @@ namespace ProcessamentoImagens
             Filtros.ReduzirEscalaResolucaoCinzaDadoValorDMA(imageBitmap, imgDest, niveisDeCinza);
             pictBoxImg2.Image = imgDest;
         }
+        private void btnContourFollowing_Click(object sender, EventArgs e)
+        {
+            if (image == null) return;
+            imageBitmap = new Bitmap(image.Width, image.Height, PixelFormat.Format24bppRgb);
+            using (Graphics graphics = Graphics.FromImage(imageBitmap))
+            {
+                graphics.DrawImage(image, 0, 0, image.Width, image.Height);
+            }
+            Bitmap imgDest = new Bitmap(imageBitmap);
+            Filtros.contourFollowing(imageBitmap, imgDest);
+            pictBoxImg2.Image = imgDest;
+        }
     }
 }

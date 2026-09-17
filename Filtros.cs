@@ -761,5 +761,117 @@ namespace ProcessamentoImagens
             while (gr >= i * 256 / valor) i++;
             return (i - 1) * 255 / (valor - 1);
         }
+
+        public static void contourFollowing(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
+        {
+            int height = imageBitmapSrc.Height;
+            int width = imageBitmapDest.Width;
+            int pixelSize = 3;
+
+            BitmapData bmS = imageBitmapSrc.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            BitmapData bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe
+            {
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dest = (byte*)bmD.Scan0.ToPointer();
+                int b, g, r;
+                for (int l = 0; l < height; l++)
+                {
+                    for (int c = 0; c < width; c++)
+                    {
+                        int i = l;
+                        int j = c;
+                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
+                        byte* dst = aux;
+                        byte* auxDest = null;
+
+                        b = *(aux);
+                        g = *(aux + 1);
+                        r = *(aux + 2);
+
+                        if (ehPreto(b, g, r))
+                        {
+                            do
+                            {
+                                auxDest = null;
+                                if (j > 0 && isT(src, bmS, i, j - 1))
+                                {
+                                    aux = getByte(src, bmS, i, j-1);
+                                    auxDest = getByte(dest, bmD, i, --j);
+                                }
+                                else
+                                {
+                                    if (j > 0 && i < height-1 && isT(src, bmS, i + 1, j - 1) && !isT(src, bmS, i+1,j))
+                                    {
+                                        aux = getByte(src, bmS, i+1, j-1);
+                                        auxDest = getByte(dest, bmD, ++i, --j);
+                                    } else {
+                                        if (i > 0 && j>0 && isT(src, bmS, i-1, j-1)){
+                                            if(i>0 && isT(src, bmS, i-1, j)){
+                                                aux = getByte(src, bmS, i-1, j);
+                                                auxDest = getByte(dest, bmD, --i, j);
+                                                *(auxDest)     = (byte)getBGR(aux, 'b');
+                                                *(auxDest + 1) = (byte)getBGR(aux, 'g');
+                                                *(auxDest + 2) = (byte)getBGR(aux, 'r');
+                                                aux = getByte(src, bmS, i, j-1);
+                                                auxDest = getByte(dest, bmD, i, --j);
+                                            } else {
+                                                aux = getByte(src, bmS, i-1, j-1);
+                                                auxDest = getByte(dest, bmD, --i, --j);
+                                            }
+                                        } else if (i>0 && isT(src, bmS, i-1, j)){
+                                            aux = getByte(src, bmS, i-1, j);
+                                            auxDest = getByte(dest, bmD, --i, j);
+                                        } else 
+                                            break;
+                                    }
+                                }
+
+                                if (auxDest != null)
+                                {
+                                    *(auxDest)     = (byte)getBGR(aux, 'b');
+                                    *(auxDest + 1) = (byte)getBGR(aux, 'g');
+                                    *(auxDest + 2) = (byte)getBGR(aux, 'r');
+                                }
+                                else
+                                {
+                                    break;
+                                }
+
+                            } while (aux != dst);
+                        }
+                    }
+                }
+            }
+
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
+        }
+
+        public static unsafe byte* getByte( byte* src, BitmapData bmS, int i, int j)
+        {
+            return src + (i * bmS.Stride) + (j * 3);
+        }
+
+        public static unsafe int getBGR(byte* aux, char bgr)
+        {
+            if (bgr == 'b') return *(aux);
+            if (bgr == 'g') return *(aux + 1);
+            if (bgr == 'r') return *(aux + 2);
+            return 0;
+        }
+
+        public static bool ehPreto(int b, int g, int r)
+        {
+            return b < 128 && g < 128 && r < 128;
+        }
+
+        public static unsafe bool isT( byte* src, BitmapData bmS, int i, int j) {
+            return ehPreto(
+                getBGR(getByte(src, bmS, i, j), 'b'),
+                getBGR(getByte(src, bmS, i, j), 'g'),
+                getBGR(getByte(src, bmS, i, j), 'r')
+            );
+        }
     }
 }

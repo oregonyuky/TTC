@@ -51,6 +51,7 @@
             this.btnSegmentar8 = new System.Windows.Forms.Button();
             this.btnReduzirTamanho = new System.Windows.Forms.Button();
             this.btnReduzirResolucaoCinzaDadoValor = new System.Windows.Forms.Button();
+            this.btnContourFollowing = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictBoxImg2)).BeginInit();
             this.SuspendLayout();
@@ -273,11 +274,22 @@
             this.btnReduzirResolucaoCinzaDadoValor.UseVisualStyleBackColor = true;
             this.btnReduzirResolucaoCinzaDadoValor.Click += new System.EventHandler(this.btnReduzirResolucaoCinzaDadoValor_Click);
             // 
+            // btnContourFollowing
+            // 
+            this.btnContourFollowing.Location = new System.Drawing.Point(699, 530);
+            this.btnContourFollowing.Name = "btnContourFollowing";
+            this.btnContourFollowing.Size = new System.Drawing.Size(160, 21);
+            this.btnContourFollowing.TabIndex = 126;
+            this.btnContourFollowing.Text = "Seguir contorno";
+            this.btnContourFollowing.UseVisualStyleBackColor = true;
+            this.btnContourFollowing.Click += new System.EventHandler(this.btnContourFollowing_Click);
+            // 
             // frmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1220, 561);
+            this.Controls.Add(this.btnContourFollowing);
             this.Controls.Add(this.btnReduzirResolucaoCinzaDadoValor);
             this.Controls.Add(this.btnReduzirTamanho);
             this.Controls.Add(this.btnSegmentar8);
@@ -334,6 +346,7 @@
         private System.Windows.Forms.Button btnSegmentar8;
         private System.Windows.Forms.Button btnReduzirTamanho;
         private System.Windows.Forms.Button btnReduzirResolucaoCinzaDadoValor;
+        private System.Windows.Forms.Button btnContourFollowing;
     }
 }
 
