@@ -994,28 +994,32 @@ namespace ProcessamentoImagens
             }
         }
 
-        private static unsafe bool ehBranco(byte* pixel)
+        private unsafe static bool ehBranco(byte* pixel)
         {
             return pixel[0] == 255 && pixel[1] == 255 && pixel[2] == 255;
         }
-        
-        private static unsafe bool marcarPixel(byte* pixel)
+        private unsafe static bool ehPreto(byte* pixel)
         {
-            return pixel[0] = 255 && pixel[1] =0 && pixel[2] = 0;
+            return pixel[0] == 0 && pixel[1] == 255 && pixel[2] == 255;
         }
 
-        public static ehConectividade4(x1, y1, x2, y2){
-            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2)==1;
+        private unsafe static void marcarPixel(byte* pixel)
+        {
+            pixel[0] = 255; pixel[1] = 0;  pixel[2] = 0;
         }
-        public static void acharPos(int i, int j, int direcao, BitmapData bd, List<int> dir, Pilha p){
-            byte*[] pixelsVet = new vet*[8] {p0(i,j,bd),p1(i,j,bd),p2(i,j,bd),p3(i,j,bd),p4(i,j,bd),p5(i,j,bd),p6(i,j,bd),p7(i,j,bd)};
+
+        public static bool ehConectividade4(int x1, int y1, int x2, int y2){
+            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2) == 1;
+        }
+        public unsafe static void acharPos(int i, int j, int direcao, BitmapData bd, List<int> dir, Pilha p){
+            byte*[] pixelsVet = new byte*[8] {p0(i,j,bd),p1(i,j,bd),p2(i,j,bd),p3(i,j,bd),p4(i,j,bd),p5(i,j,bd),p6(i,j,bd),p7(i,j,bd)};
             byte* pixelAtual = (byte*)bd.Scan0.ToPointer() + i*bd.Stride + j*pixelSize;
             for(int t=1;t<=8;t++){
                 int idx = (direcao + t)%8;
                 if(pixelsVet[idx] != null && ehPreto(pixelsVet[idx])){
                     int idxAnt = (idx+7)%8;
-                    if(pixelsVet[idxAnt]!=null && ehBrancho(pixelsVet[idxAnt])){
-                        int x, y;
+                    if(pixelsVet[idxAnt]!=null && ehBranco(pixelsVet[idxAnt])){
+                        int x=-1, y=-1;
                         switch (idxAnt)
                         {
                             case 0: x = j + 1; y = i; break; // direita
@@ -1026,7 +1030,7 @@ namespace ProcessamentoImagens
                             case 5: x = j - 1; y = i + 1; break; // abaixo esquerda
                             case 6: x = j; y = i + 1; break; // abaixo
                             case 7: x = j + 1; y = i + 1; break; // abaixo direita
-                        }
+                        };
                         if(ehConectividade4(x, y, i, j)){
                             dir.Insert(0, (idxAnt+4)%8);
                             p.push(new Info(x, y));
@@ -1043,7 +1047,7 @@ namespace ProcessamentoImagens
             }
         }
 
-        public static boolean marcado(byte* aux){
+        public unsafe static bool marcado(byte* aux){
             return aux[0]==255 && aux[1]==0 && aux[2]==0;
         }
         public unsafe static void escreverMarcadosNaImagemDestino(BitmapData bmS, BitmapData bmD){
@@ -1092,15 +1096,15 @@ namespace ProcessamentoImagens
                         byte* pixelDireita = getP(i, j+1, bmS);
                         if(ehBranco(pixelAtual) && pixelDireita!=null && ehPreto(pixelDireita)){
                             byte* destino = pixelAtual;
-                            byte* atualContorno = inicial;
+                            byte* atualContorno = destino;
                             int iAtual = i, jAtual = j, direcao=4;
                             do{
                                 marcarPixel(atualContorno);
                                 acharPos(iAtual, jAtual, direcao, bmS, dir, p);
                                 if(!p.isEmpty()){
-                                    int direcao = dir[0];
+                                    direcao = dir[0];
                                     Info info = p.pop();
-                                    atualContorno = getP(info.getY(), info.getX(), bd);
+                                    atualContorno = getP(info.getY(), info.getX(), bmS);
                                 }
                             }while(atualContorno != destino);
                         }
@@ -1109,7 +1113,7 @@ namespace ProcessamentoImagens
                 escreverMarcadosNaImagemDestino(bmS, bmD);
             }
             imageBitmapSrc.UnlockBits(bmS);
-            imageBimapDest.UnlockBits(bmD);
+            imageBitmapDest.UnlockBits(bmD);
         }
     }
 }
