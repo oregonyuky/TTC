@@ -765,87 +765,125 @@ namespace ProcessamentoImagens
         public static void contourFollowing(Bitmap imageBitmapSrc, Bitmap imageBitmapDest)
         {
             int height = imageBitmapSrc.Height;
-            int width = imageBitmapDest.Width;
-            int pixelSize = 3;
-
+            int width = imageBitmapSrc.Width;
+            // Índices em sentido anti-horário: SO, S, SE, L, NE, N, NO, O.
+            int[] deltaI = { 1, 1, 1, 0, -1, -1, -1, 0 };
+            int[] deltaJ = { -1, 0, 1, 1, 1, 0, -1, -1 };
+            bool[,] visitado = new bool[height, width];
             BitmapData bmS = imageBitmapSrc.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            BitmapData bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-            unsafe
+            BitmapData bmD = null;
+
+            try
             {
-                byte* src = (byte*)bmS.Scan0.ToPointer();
-                byte* dest = (byte*)bmD.Scan0.ToPointer();
-                int b, g, r;
-                for (int l = 0; l < height; l++)
+                bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                unsafe
                 {
-                    for (int c = 0; c < width; c++)
-                    {
-                        int i = l;
-                        int j = c;
-                        byte* aux = src + (i * bmS.Stride) + (j * pixelSize);
-                        byte* dst = aux;
-                        byte* auxDest = null;
+                    byte* src = (byte*)bmS.Scan0.ToPointer();
+                    byte* dest = (byte*)bmD.Scan0.ToPointer();
 
-                        b = *(aux);
-                        g = *(aux + 1);
-                        r = *(aux + 2);
-
-                        if (ehPreto(b, g, r))
+                    // O destino começa branco para mostrar somente os pixels do contorno.
+                    for (int linha = 0; linha < height; linha++)
+                        for (int coluna = 0; coluna < width; coluna++)
                         {
-                            do
+                            byte* pixel = getByte(dest, bmD, linha, coluna);
+                            pixel[0] = pixel[1] = pixel[2] = 255;
+                        }
+
+                    for (int l = 0; l < height; l++)
+                        for (int c = 0; c < width; c++)
+                        {
+                            // Um contorno começa em preto com fundo à esquerda.
+                            if (visitado[l, c] || !isT(src, bmS, l, c) || (c > 0 && isT(src, bmS, l, c - 1))) continue;
+                            int i = l, j = c;
+                            int fundoI = i, fundoJ = j - 1;
+                            int primeiroI = -1, primeiroJ = -1;
+                            HashSet<long> estados = new HashSet<long>();
+
+                            while (true)
                             {
-                                auxDest = null;
-                                if (j > 0 && isT(src, bmS, i, j - 1))
+                                int direcaoFundo = 0;
+                                while (direcaoFundo < 8 && (i + deltaI[direcaoFundo] != fundoI || j + deltaJ[direcaoFundo] != fundoJ))
+                                    direcaoFundo++;
+
+                                long estado = (((long)i * width + j) << 3) | (uint)direcaoFundo;
+                                if (!estados.Add(estado))
+                                    break;
+
+                                visitado[i, j] = true;
+                                byte* contorno = getByte(dest, bmD, i, j);
+                                contorno[0] = contorno[1] = contorno[2] = 0;
+
+                                int anteriorI = i, anteriorJ = j;
+                                int direcaoEscolhida = -1;
+                                byte* auxDest = null;
+
+                                // Os mesmos oito ifs, testados a partir do vizinho de fundo.
+                                for (int tentativa = 1; tentativa <= 8; tentativa++)
                                 {
-                                    aux = getByte(src, bmS, i, j-1);
-                                    auxDest = getByte(dest, bmD, i, --j);
-                                }
-                                else
-                                {
-                                    if (j > 0 && i < height-1 && isT(src, bmS, i + 1, j - 1) && !isT(src, bmS, i+1,j))
+                                    int direcao = (direcaoFundo + tentativa) % 8;
+                                    if (direcao == 0 && i < height - 1 && j > 0 && isT(src, bmS, i + 1, j - 1))
                                     {
-                                        aux = getByte(src, bmS, i+1, j-1);
                                         auxDest = getByte(dest, bmD, ++i, --j);
-                                    } else {
-                                        if (i > 0 && j>0 && isT(src, bmS, i-1, j-1)){
-                                            if(i>0 && isT(src, bmS, i-1, j)){
-                                                aux = getByte(src, bmS, i-1, j);
-                                                auxDest = getByte(dest, bmD, --i, j);
-                                                *(auxDest)     = (byte)getBGR(aux, 'b');
-                                                *(auxDest + 1) = (byte)getBGR(aux, 'g');
-                                                *(auxDest + 2) = (byte)getBGR(aux, 'r');
-                                                aux = getByte(src, bmS, i, j-1);
-                                                auxDest = getByte(dest, bmD, i, --j);
-                                            } else {
-                                                aux = getByte(src, bmS, i-1, j-1);
-                                                auxDest = getByte(dest, bmD, --i, --j);
-                                            }
-                                        } else if (i>0 && isT(src, bmS, i-1, j)){
-                                            aux = getByte(src, bmS, i-1, j);
-                                            auxDest = getByte(dest, bmD, --i, j);
-                                        } else 
-                                            break;
+                                    }
+                                    else if (direcao == 1 && i < height - 1 && isT(src, bmS, i + 1, j))
+                                    {
+                                        auxDest = getByte(dest, bmD, ++i, j);
+                                    }
+                                    else if (direcao == 2 && i < height - 1 && j < width - 1 && isT(src, bmS, i + 1, j + 1))
+                                    {
+                                        auxDest = getByte(dest, bmD, ++i, ++j);
+                                    }
+                                    else if (direcao == 3 && j < width - 1 && isT(src, bmS, i, j + 1))
+                                    {
+                                        auxDest = getByte(dest, bmD, i, ++j);
+                                    }
+                                    else if (direcao == 4 && i > 0 && j < width - 1 && isT(src, bmS, i - 1, j + 1))
+                                    {
+                                        auxDest = getByte(dest, bmD, --i, ++j);
+                                    }
+                                    else if (direcao == 5 && i > 0 && isT(src, bmS, i - 1, j))
+                                    {
+                                        auxDest = getByte(dest, bmD, --i, j);
+                                    }
+                                    else if (direcao == 6 && i > 0 && j > 0 && isT(src, bmS, i - 1, j - 1))
+                                    {
+                                        auxDest = getByte(dest, bmD, --i, --j);
+                                    }
+                                    else if (direcao == 7 && j > 0 && isT(src, bmS, i, j - 1))
+                                    {
+                                        auxDest = getByte(dest, bmD, i, --j);
+                                    }
+
+                                    if (auxDest != null)
+                                    {
+                                        direcaoEscolhida = direcao;
+                                        break;
                                     }
                                 }
 
-                                if (auxDest != null)
-                                {
-                                    *(auxDest)     = (byte)getBGR(aux, 'b');
-                                    *(auxDest + 1) = (byte)getBGR(aux, 'g');
-                                    *(auxDest + 2) = (byte)getBGR(aux, 'r');
-                                }
-                                else
-                                {
+                                if (direcaoEscolhida < 0 ||
+                                    (anteriorI == l && anteriorJ == c && i == primeiroI && j == primeiroJ))
                                     break;
+
+                                if (primeiroI < 0)
+                                {
+                                    primeiroI = i;
+                                    primeiroJ = j;
                                 }
 
-                            } while (aux != dst);
+                                int direcaoAnterior = (direcaoEscolhida + 7) % 8;
+                                fundoI = anteriorI + deltaI[direcaoAnterior];
+                                fundoJ = anteriorJ + deltaJ[direcaoAnterior];
+                            }
                         }
-                    }
                 }
             }
-
-            imageBitmapSrc.UnlockBits(bmS);
-            imageBitmapDest.UnlockBits(bmD);
+            finally
+            {
+                imageBitmapSrc.UnlockBits(bmS);
+                if (bmD != null)
+                    imageBitmapDest.UnlockBits(bmD);
+            }
         }
 
         public static unsafe byte* getByte( byte* src, BitmapData bmS, int i, int j)
