@@ -767,47 +767,47 @@ namespace ProcessamentoImagens
             int height = imageBitmapSrc.Height;
             int width = imageBitmapSrc.Width;
             // Índices em sentido anti-horário: SO, S, SE, L, NE, N, NO, O.
-            int[] deltaI = { 1, 1, 1, 0, -1, -1, -1, 0 };
-            int[] deltaJ = { -1, 0, 1, 1, 1, 0, -1, -1 };
+            int[] y = { 1, 1, 1, 0, -1, -1, -1, 0 };
+            int[] x = { -1, 0, 1, 1, 1, 0, -1, -1 };
             bool[,] visitado = new bool[height, width];
             BitmapData bmS = imageBitmapSrc.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            BitmapData bmD = null;
-
-            try
+            BitmapData bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            unsafe
             {
-                bmD = imageBitmapDest.LockBits( new Rectangle(0, 0, width, height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-                unsafe
-                {
-                    byte* src = (byte*)bmS.Scan0.ToPointer();
-                    byte* dest = (byte*)bmD.Scan0.ToPointer();
+                byte* src = (byte*)bmS.Scan0.ToPointer();
+                byte* dest = (byte*)bmD.Scan0.ToPointer();
 
-                    // O destino começa branco para mostrar somente os pixels do contorno.
-                    for (int linha = 0; linha < height; linha++)
-                        for (int coluna = 0; coluna < width; coluna++)
+                // O destino começa branco para mostrar somente os pixels do contorno.
+                for (int linha = 0; linha < height; linha++)
+                    for (int coluna = 0; coluna < width; coluna++)
+                    {
+                        byte* pixel = getByte(dest, bmD, linha, coluna);
+                        pixel[0] = pixel[1] = pixel[2] = 255;
+                    }
+
+                for (int l = 0; l < height; l++)
+                    for (int c = 0; c < width; c++)
+                    {
+                        // Um contorno começa em preto com fundo à esquerda.
+                        if (visitado[l, c] || !isT(src, bmS, l, c) || (c > 0 && isT(src, bmS, l, c - 1))) continue;
+                        int i = l, j = c;
+                        int fundoI = i, fundoJ = j - 1;
+                        int primeiroI = -1, primeiroJ = -1;
+                        HashSet<long> estados = new HashSet<long>();
+                        bool flag = true;
+                        while (flag)
                         {
-                            byte* pixel = getByte(dest, bmD, linha, coluna);
-                            pixel[0] = pixel[1] = pixel[2] = 255;
-                        }
+                            int direcaoFundo = 0;
+                            while (direcaoFundo < 8 && (i + y[direcaoFundo] != fundoI || j + x[direcaoFundo] != fundoJ))
+                                direcaoFundo++;
 
-                    for (int l = 0; l < height; l++)
-                        for (int c = 0; c < width; c++)
-                        {
-                            // Um contorno começa em preto com fundo à esquerda.
-                            if (visitado[l, c] || !isT(src, bmS, l, c) || (c > 0 && isT(src, bmS, l, c - 1))) continue;
-                            int i = l, j = c;
-                            int fundoI = i, fundoJ = j - 1;
-                            int primeiroI = -1, primeiroJ = -1;
-                            HashSet<long> estados = new HashSet<long>();
-
-                            while (true)
+                            long estado = (((long)i * width + j) << 3) | (uint)direcaoFundo;
+                            if (!estados.Add(estado))
                             {
-                                int direcaoFundo = 0;
-                                while (direcaoFundo < 8 && (i + deltaI[direcaoFundo] != fundoI || j + deltaJ[direcaoFundo] != fundoJ))
-                                    direcaoFundo++;
-
-                                long estado = (((long)i * width + j) << 3) | (uint)direcaoFundo;
-                                if (!estados.Add(estado))
-                                    break;
+                                flag = false;
+                            }
+                            else
+                            {
 
                                 visitado[i, j] = true;
                                 byte* contorno = getByte(dest, bmD, i, j);
@@ -817,8 +817,9 @@ namespace ProcessamentoImagens
                                 int direcaoEscolhida = -1;
                                 byte* auxDest = null;
 
+                                bool flag1 = true;
                                 // Os mesmos oito ifs, testados a partir do vizinho de fundo.
-                                for (int tentativa = 1; tentativa <= 8; tentativa++)
+                                for (int tentativa = 1; tentativa <= 8 && flag1; tentativa++)
                                 {
                                     int direcao = (direcaoFundo + tentativa) % 8;
                                     if (direcao == 0 && i < height - 1 && j > 0 && isT(src, bmS, i + 1, j - 1))
@@ -857,33 +858,31 @@ namespace ProcessamentoImagens
                                     if (auxDest != null)
                                     {
                                         direcaoEscolhida = direcao;
-                                        break;
+                                        flag1 = false;
                                     }
                                 }
 
-                                if (direcaoEscolhida < 0 ||
-                                    (anteriorI == l && anteriorJ == c && i == primeiroI && j == primeiroJ))
-                                    break;
-
-                                if (primeiroI < 0)
+                                if (direcaoEscolhida < 0 || (anteriorI == l && anteriorJ == c && i == primeiroI && j == primeiroJ))
                                 {
-                                    primeiroI = i;
-                                    primeiroJ = j;
-                                }
+                                    flag = false;
+                                } else { 
 
-                                int direcaoAnterior = (direcaoEscolhida + 7) % 8;
-                                fundoI = anteriorI + deltaI[direcaoAnterior];
-                                fundoJ = anteriorJ + deltaJ[direcaoAnterior];
+                                    if (primeiroI < 0)
+                                    {
+                                        primeiroI = i;
+                                        primeiroJ = j;
+                                    }
+
+                                    int direcaoAnterior = (direcaoEscolhida + 7) % 8;
+                                    fundoI = anteriorI + y[direcaoAnterior];
+                                    fundoJ = anteriorJ + x[direcaoAnterior];
+                                }
                             }
                         }
-                }
+                    }
             }
-            finally
-            {
-                imageBitmapSrc.UnlockBits(bmS);
-                if (bmD != null)
-                    imageBitmapDest.UnlockBits(bmD);
-            }
+            imageBitmapSrc.UnlockBits(bmS);
+            imageBitmapDest.UnlockBits(bmD);
         }
 
         public static unsafe byte* getByte( byte* src, BitmapData bmS, int i, int j)
