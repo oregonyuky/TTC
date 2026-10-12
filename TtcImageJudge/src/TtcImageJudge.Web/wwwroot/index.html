@@ -6,8 +6,9 @@
   <title>TTC Image Judge</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/monaco.css">
-  <link rel="stylesheet" href="/admin.css">
-  <script defer src="/admin.js"></script>
+  <link rel="stylesheet" href="/admin.css?v=3">
+  <script defer src="/admin-config.js?v=3"></script>
+  <script defer src="/admin.js?v=3"></script>
 </head>
 <body>
 <header>
@@ -48,15 +49,20 @@
 <dialog id="adminDialog">
   <form method="dialog">
     <div class="section-heading"><div><div class="eyebrow">ÁREA RESTRITA</div><h2>Configuração do exercício</h2></div><button class="icon" value="cancel" aria-label="Fechar">×</button></div>
-    <p>Cadastre regras, testes, imagens esperadas ou referência C#. Alterações incrementam versões e invalidam gabaritos incompatíveis.</p>
+    <p>Cadastre a entrada e o código C# correto. A referência será executada para criar a imagem esperada de cada teste.</p>
     <label>Chave administrativa<input id="adminKey" type="password" autocomplete="current-password"></label>
-    <div class="upload-row"><label>Índice do teste<input id="adminTestIndex" type="number" min="0" value="0"></label><label>Imagem de entrada<input id="adminInputImage" type="file" accept="image/png,image/jpeg,image/bmp"></label><label>Imagem esperada<input id="adminExpectedImage" type="file" accept="image/png,image/jpeg,image/bmp"></label></div>
-    <label>JSON do exercício<textarea id="adminJson"></textarea></label>
+    <div class="upload-row"><label>Índice do teste<input id="adminTestIndex" type="number" min="0" value="0"></label><label>Imagem de entrada<input id="adminInputImage" type="file" accept="image/png,image/jpeg,image/bmp"></label></div>
+    <section class="admin-reference-card">
+      <div class="admin-reference-heading"><div><strong>Código C# correto</strong><small id="adminReferenceTest">Compartilhado por todos os testes</small></div><span>GERA O GABARITO</span></div>
+      <div id="adminReferenceEditor" class="admin-reference-editor" aria-label="Código C# correto"><span class="editor-loading">Informe a chave administrativa para carregar a referência…</span></div>
+      <p>Este código é compilado e executado no ambiente isolado. A imagem retornada será comparada pixel a pixel com a solução enviada.</p>
+    </section>
+    <details class="admin-advanced"><summary>Configuração avançada em JSON</summary><label>JSON do exercício<textarea id="adminJson"></textarea></label></details>
     <menu><button value="cancel" class="ghost">Cancelar</button><button id="saveAdmin" value="default" class="primary">Salvar versão</button></menu><div id="adminMessage"></div>
   </form>
 </dialog>
 <script src="/vendor/monaco/vs/loader.js?v=0.52.2-2"></script>
 <script src="/editor-config.js?v=0.52.2-2"></script>
-<script src="/app.js?v=0.52.2-2"></script>
+<script src="/app.js?v=0.52.2-3"></script>
 </body>
 </html>

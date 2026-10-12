@@ -204,10 +204,16 @@ async function history(show = true) {
 
 $('historyButton').onclick = () => history(true);
 $('closeHistory').onclick = () => $('history').hidden = true;
-$('adminButton').onclick = () => { $('adminJson').value = JSON.stringify(current, null, 2); $('adminDialog').showModal(); };
+$('adminButton').onclick = async () => {
+  $('adminJson').value = JSON.stringify(current, null, 2);
+  $('adminTestIndex').max = Math.max(0, current.tests.length - 1);
+  $('adminDialog').showModal();
+  await window.openAdminReferenceEditor?.();
+};
 $('saveAdmin').onclick = async event => {
   event.preventDefault();
   try {
+    window.syncAdminReferenceToJson?.();
     const exercise = JSON.parse($('adminJson').value);
     exercise.version++;
     const response = await fetch(API + '/admin/exercises/' + exercise.id, {

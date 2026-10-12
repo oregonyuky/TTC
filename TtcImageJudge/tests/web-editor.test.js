@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const editorConfig = require('../src/TtcImageJudge.Web/wwwroot/editor-config.js');
+const adminConfig = require('../src/TtcImageJudge.Web/wwwroot/admin-config.js');
 
 test('configura o Monaco para C# com quatro espaços e layout responsivo', () => {
   const options = editorConfig.editorOptions('public class Teste {}');
@@ -43,4 +44,25 @@ test('versiona os arquivos do Monaco e informa falhas de carregamento', () => {
   assert.match(app, /urlArgs: 'v=0\.52\.2-2'/);
   assert.match(app, /O carregamento excedeu 15 segundos/);
   assert.match(app, /showEditorLoadError/);
+});
+
+test('configura o código correto como gerador da imagem esperada', () => {
+  const exercise = { tests: [
+    { name: 'Gradiente', expectedOutputMode: 'uploadedImage', expectedImageBase64: 'imagem-antiga', referenceCode: null },
+    { name: 'Ruído', expectedOutputMode: 'uploadedImage', expectedImageBase64: 'outra-imagem', referenceCode: null }
+  ] };
+  adminConfig.setReferenceCode(exercise, 0, 'public static Bitmap Blur5x5(Bitmap img) => img;');
+  assert.deepEqual(exercise.tests.map(test => test.expectedOutputMode),
+    ['referenceImplementation', 'referenceImplementation']);
+  assert.deepEqual(exercise.tests.map(test => test.expectedImageBase64), [null, null]);
+  assert.equal(exercise.tests[1].referenceCode, 'public static Bitmap Blur5x5(Bitmap img) => img;');
+  assert.equal(adminConfig.referenceCode(exercise, 0), 'public static Bitmap Blur5x5(Bitmap img) => img;');
+});
+
+test('substitui o upload da imagem esperada pelo editor C# administrativo', () => {
+  const webRoot = path.join(__dirname, '..', 'src', 'TtcImageJudge.Web', 'wwwroot');
+  const html = fs.readFileSync(path.join(webRoot, 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /id="adminExpectedImage"/);
+  assert.match(html, /id="adminReferenceEditor"/);
+  assert.match(html, /Código C# correto/);
 });
