@@ -1,6 +1,9 @@
 .upload-row { display: grid; grid-template-columns: 130px minmax(240px, 1fr); gap: 10px; }
 .upload-row label { font-size: 12px; }
 .upload-row input { font-size: 11px; }
+.admin-key-row { display: grid; grid-template-columns: minmax(240px, 1fr) auto; gap: 10px; align-items: end; }
+.admin-key-row label { margin-bottom: 0; }
+.admin-key-row button { margin-bottom: 1px; border-color: #dce3de; }
 .admin-reference-card { margin-top: 18px; overflow: hidden; border: 1px solid #29342f; border-radius: 12px; background: #111815; }
 .admin-reference-heading { display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: 10px 14px; color: #eef5f0; border-bottom: 1px solid #29342f; }
 .admin-reference-heading strong, .admin-reference-heading small { display: block; }
@@ -11,4 +14,4 @@
 .admin-advanced { margin: 16px 0 0; background: #f7f9f7; }
 .admin-advanced summary { padding: 11px 14px; color: #69756f; font-size: 12px; }
 .admin-advanced label { margin: 0; padding: 0 14px 14px; }
-@media (max-width: 650px) { .upload-row { grid-template-columns: 1fr; } }
+@media (max-width: 650px) { .upload-row, .admin-key-row { grid-template-columns: 1fr; } }

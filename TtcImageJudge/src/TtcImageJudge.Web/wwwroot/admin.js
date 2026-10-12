@@ -50,7 +50,10 @@ async function openAdminReferenceEditor() {
     options.ariaLabel = 'Código C# correto usado para gerar a imagem esperada';
     options.minimap = { enabled: false };
     options.fontSize = 12;
-    adminReferenceEditor = monaco.editor.create(adminElement('adminReferenceEditor'), options);
+    options.readOnly = true;
+    const host = adminElement('adminReferenceEditor');
+    host.textContent = '';
+    adminReferenceEditor = monaco.editor.create(host, options);
     adminReferenceEditor.onDidChangeModelContent(() => {
       if (updatingReferenceEditor) return;
       try {
@@ -73,21 +76,33 @@ window.openAdminReferenceEditor = openAdminReferenceEditor;
 window.syncAdminReferenceToJson = syncAdminReferenceToJson;
 
 window.addEventListener('DOMContentLoaded', () => {
-  adminElement('adminKey').addEventListener('change', async event => {
+  const loadPrivateReference = async () => {
     try {
+      await openAdminReferenceEditor();
       const response = await fetch(`http://127.0.0.1:5072/api/admin/exercises/${current.id}`, {
-        headers: { 'X-Admin-Key': event.target.value }
+        headers: { 'X-Admin-Key': adminElement('adminKey').value }
       });
       if (!response.ok) throw new Error('Chave inválida.');
       const exercise = await response.json();
       writeAdminExercise(exercise);
       adminElement('adminTestIndex').max = Math.max(0, exercise.tests.length - 1);
       showReferenceForSelectedTest();
+      adminReferenceEditor.updateOptions({ readOnly: false });
+      adminReferenceEditor.focus();
       adminElement('adminMessage').textContent = 'Dados privados e código de referência carregados.';
     } catch (error) {
+      adminReferenceEditor?.updateOptions({ readOnly: true });
       adminElement('adminMessage').textContent = error.message;
     }
+  };
+
+  adminElement('adminKey').addEventListener('change', loadPrivateReference);
+  adminElement('adminKey').addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    loadPrivateReference();
   });
+  adminElement('loadAdminReference').addEventListener('click', loadPrivateReference);
 
   adminElement('adminTestIndex').addEventListener('change', () => {
     try {

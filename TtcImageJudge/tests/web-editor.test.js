@@ -62,7 +62,11 @@ test('configura o código correto como gerador da imagem esperada', () => {
 test('substitui o upload da imagem esperada pelo editor C# administrativo', () => {
   const webRoot = path.join(__dirname, '..', 'src', 'TtcImageJudge.Web', 'wwwroot');
   const html = fs.readFileSync(path.join(webRoot, 'index.html'), 'utf8');
+  const admin = fs.readFileSync(path.join(webRoot, 'admin.js'), 'utf8');
   assert.doesNotMatch(html, /id="adminExpectedImage"/);
   assert.match(html, /id="adminReferenceEditor"/);
+  assert.match(html, /id="loadAdminReference"/);
   assert.match(html, /Código C# correto/);
+  assert.match(admin, /host\.textContent = ''/);
+  assert.match(admin, /updateOptions\(\{ readOnly: false \}\)/);
 });
