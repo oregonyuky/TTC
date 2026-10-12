@@ -21,6 +21,26 @@
   font: 13px/1.5 "Cascadia Code", Consolas, monospace;
 }
 
+.editor-load-error {
+  display: flex;
+  height: 100%;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #d8e2dc;
+  background: #111815;
+}
+
+.editor-load-error span {
+  max-width: 680px;
+  color: #e6a6a6;
+  font: 13px/1.5 "Cascadia Code", Consolas, monospace;
+}
+
 .monaco-editor .margin,
 .monaco-editor-background {
   background-color: #111815 !important;

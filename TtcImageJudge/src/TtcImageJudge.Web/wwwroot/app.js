@@ -11,24 +11,65 @@ const verdicts = {
   requirementNotMet: 'Requisito não atendido', infrastructureFailure: 'Falha de infraestrutura'
 };
 
+function showEditorLoadError(error) {
+  const host = $('editor');
+  const message = error?.message || String(error);
+  host.innerHTML = '';
+  const panel = document.createElement('div');
+  panel.className = 'editor-load-error';
+  const title = document.createElement('strong');
+  title.textContent = 'Não foi possível carregar o editor C#.';
+  const detail = document.createElement('span');
+  detail.textContent = message;
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.className = 'ghost';
+  retry.textContent = 'Tentar novamente';
+  retry.onclick = () => window.location.reload();
+  panel.append(title, detail, retry);
+  host.append(panel);
+}
+
 const editorReady = new Promise((resolve, reject) => {
+  let settled = false;
+  const fail = error => {
+    if (settled) return;
+    settled = true;
+    window.clearTimeout(timeout);
+    const normalized = error instanceof Error ? error : new Error(String(error));
+    showEditorLoadError(normalized);
+    reject(normalized);
+  };
+  const timeout = window.setTimeout(() => fail(new Error(
+    'O carregamento excedeu 15 segundos. Reinicie o serviço Web e tente novamente.'
+  )), 15000);
+
   if (typeof window.require !== 'function') {
-    reject(new Error('O carregador do Monaco Editor não foi encontrado.'));
+    fail(new Error('O arquivo local loader.js do Monaco não foi encontrado.'));
     return;
   }
-  window.require.config({ paths: { vs: '/vendor/monaco/vs' } });
+  window.require.config({
+    paths: { vs: '/vendor/monaco/vs' },
+    urlArgs: 'v=0.52.2-2'
+  });
   window.require(['vs/editor/editor.main'], () => {
-    monaco.languages.setLanguageConfiguration('csharp', TtcMonaco.languageConfiguration(monaco));
-    $('editor').textContent = '';
-    codeEditor = monaco.editor.create($('editor'), TtcMonaco.editorOptions(''));
-    initialEditorModel = codeEditor.getModel();
-    codeEditor.onDidChangeModelContent(() => {
-      if (current) localStorage.setItem('ttc-code-' + current.id, codeEditor.getValue());
-    });
-    codeEditor.onDidChangeCursorPosition(updateCursor);
-    codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, submit);
-    resolve(codeEditor);
-  }, error => reject(new Error('Não foi possível carregar o Monaco Editor: ' + error)));
+    try {
+      monaco.languages.setLanguageConfiguration('csharp', TtcMonaco.languageConfiguration(monaco));
+      $('editor').textContent = '';
+      codeEditor = monaco.editor.create($('editor'), TtcMonaco.editorOptions(''));
+      initialEditorModel = codeEditor.getModel();
+      codeEditor.onDidChangeModelContent(() => {
+        if (current) localStorage.setItem('ttc-code-' + current.id, codeEditor.getValue());
+      });
+      codeEditor.onDidChangeCursorPosition(updateCursor);
+      codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, submit);
+      settled = true;
+      window.clearTimeout(timeout);
+      resolve(codeEditor);
+    } catch (error) {
+      fail(error);
+    }
+  }, error => fail(new Error('Falha ao baixar os módulos locais do Monaco: ' + error)));
 });
 
 async function start() {
