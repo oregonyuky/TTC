@@ -1,0 +1,4 @@
+.upload-row { display: grid; grid-template-columns: 110px 1fr 1fr; gap: 10px; }
+.upload-row label { font-size: 12px; }
+.upload-row input { font-size: 11px; }
+@media (max-width: 650px) { .upload-row { grid-template-columns: 1fr; } }

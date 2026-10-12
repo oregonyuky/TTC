@@ -5,3 +5,15 @@
 # Build outputs
 bin/
 obj/
+
+# TTC Image Judge local/runtime data
+TtcImageJudge/**/data/
+TtcImageJudge/**/uploads/
+TtcImageJudge/**/artifacts/
+TtcImageJudge/**/appsettings.Local.json
+TtcImageJudge/**/appsettings.*.local.json
+TtcImageJudge/.env*
+TtcImageJudge/TestResults/
+*.db
+*.db-shm
+*.db-wal

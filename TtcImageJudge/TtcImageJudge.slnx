@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TtcImageJudge.Api/TtcImageJudge.Api.csproj" />
+    <Project Path="src/TtcImageJudge.Core/TtcImageJudge.Core.csproj" />
+    <Project Path="src/TtcImageJudge.Executor/TtcImageJudge.Executor.csproj" />
+    <Project Path="src/TtcImageJudge.Web/TtcImageJudge.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TtcImageJudge.Tests/TtcImageJudge.Tests.csproj" />
+  </Folder>
+</Solution>
