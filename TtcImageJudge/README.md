@@ -12,7 +12,7 @@ Browser :5071 → Web estático
           Executor :5073 → AppContainer + Job Object → compilador/solução
 ```
 
-- **Web**: ASP.NET Core servindo HTML/CSS/JS sem dependências externas. O editor tem destaque de C#, linhas, Tab e persiste o código em `localStorage`.
+- **Web**: ASP.NET Core servindo HTML/CSS/JS e Monaco Editor 0.52.2 versionado localmente, sem dependência de CDN em execução. O editor C# oferece indentação, pares automáticos, linhas, undo/redo e persiste o código em `localStorage`.
 - **API**: endpoints de exercícios/submissões, SQLite e administração. A referência e imagens privadas são removidas da resposta pública. A administração exige loopback e `X-Admin-Key`.
 - **Executor**: serviço Windows separado, ligado somente a `127.0.0.1`. Copia um worker .NET autocontido para uma pasta temporária exclusiva e executa compilador, referência e submissão dentro de um AppContainer descartável.
 - **Worker**: usa Roslyn para compilar o wrapper real e carrega o assembly resultante dentro do processo isolado.

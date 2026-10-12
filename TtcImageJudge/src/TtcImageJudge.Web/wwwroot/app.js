@@ -1,14 +1,191 @@
-const API='http://127.0.0.1:5072/api',$=id=>document.getElementById(id);let current;
-const verdicts={accepted:'Resposta correta',wrongAnswer:'Resposta incorreta',compilationError:'Erro de compilação',runtimeError:'Erro de execução',timeLimitExceeded:'Tempo excedido',memoryLimitExceeded:'Memória excedida',requirementNotMet:'Requisito não atendido',infrastructureFailure:'Falha de infraestrutura'};
-async function start(){try{const xs=await json('/exercises');$('exerciseCount').textContent=xs.length;$('exerciseList').innerHTML=xs.map((e,i)=>`<button class="exercise ${i?'':'active'}" data-id="${e.id}"><span>${e.difficulty} · v${e.version}</span><strong>${esc(e.title)}</strong></button>`).join('');document.querySelectorAll('.exercise').forEach(b=>b.onclick=()=>load(b.dataset.id,b));if(xs.length)await load(xs[0].id,document.querySelector('.exercise'));$('executorState').innerHTML='<i></i><span>API conectada · executor isolado sob demanda</span>';$('executorState').classList.add('ok')}catch{$('loading').textContent='Não foi possível conectar à API em 127.0.0.1:5072.'}}
-async function load(id,b){current=await json('/exercises/'+id);document.querySelectorAll('.exercise').forEach(x=>x.classList.remove('active'));b?.classList.add('active');$('loading').hidden=true;$('problem').hidden=false;$('codeSection').hidden=false;$('title').textContent=current.title;$('statement').textContent=current.statement;$('notes').textContent=current.notes;$('difficulty').textContent=current.difficulty;$('version').textContent=`V${current.version} · REF ${current.referenceVersion} · REGRAS ${current.rulesVersion}`;const r=current.rules;$('rules').innerHTML=[['Assinatura',r.functionSignature],['Entrada',r.inputFormat],['Bordas',r.borderHandling],['Aritmética',r.roundingAndSaturation],['Comparação',r.exactComparison?'Exata — um pixel divergente reprova':`Tolerância de ${r.channelTolerance} por canal`],['Limites',`${r.timeLimitMs} ms · ${r.memoryLimitMb} MB`],['Memória direta',r.requiresDirectMemoryAccess?'Obrigatória; análise estrutural + testes':'Não exigida']].map(([a,v])=>`<div class="rule"><small>${a}</small>${esc(v)}</div>`).join('');$('tests').innerHTML=current.tests.map(t=>`<span>${esc(t.name)} · ${t.width}×${t.height}</span>`).join('');$('editor').value=localStorage.getItem('ttc-code-'+id)??current.starterCode;sync();history(false)}
-function hi(s){return esc(s).replace(/(\/\/.*)$/gm,'<span class="comment">$1</span>').replace(/(&quot;.*?&quot;)/g,'<span class="str">$1</span>').replace(/\b(public|private|static|unsafe|return|new|using|try|finally|for|if|else|throw|int|byte|var|void)\b/g,'<span class="kw">$1</span>').replace(/\b(Bitmap|BitmapData|Rectangle|PixelFormat|ImageLockMode|NotImplementedException)\b/g,'<span class="type">$1</span>').replace(/\b(\d+)\b/g,'<span class="num">$1</span>')+'\n'}
-function sync(){const e=$('editor');$('highlight').innerHTML=hi(e.value);$('lines').textContent=Array.from({length:e.value.split('\n').length},(_,i)=>i+1).join('\n');if(current)localStorage.setItem('ttc-code-'+current.id,e.value);cursor()}
-function cursor(){const e=$('editor'),p=e.value.slice(0,e.selectionStart).split('\n');$('cursor').textContent=`Ln ${p.length}, Col ${p.at(-1).length+1}`}
-$('editor').addEventListener('input',sync);$('editor').addEventListener('click',cursor);$('editor').addEventListener('keyup',cursor);$('editor').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();e.target.setRangeText('    ',e.target.selectionStart,e.target.selectionEnd,'end');sync()}if(e.ctrlKey&&e.key==='Enter')submit()});
-$('resetButton').onclick=()=>{if(confirm('Restaurar o código inicial deste exercício?')){$('editor').value=current.starterCode;sync()}};$('submitButton').onclick=submit;
-async function submit(){const b=$('submitButton');b.disabled=true;b.textContent='Julgando…';$('result').hidden=false;$('result').innerHTML='<div class="verdict">Enviando ao executor isolado…</div>';try{const s=await json('/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({exerciseId:current.id,sourceCode:$('editor').value})});render(s);history(false)}catch(e){$('result').innerHTML=`<div class="verdict wrong">Falha ao enviar</div><p>${esc(e.message)}</p>`}finally{b.disabled=false;b.innerHTML='Enviar solução <kbd>Ctrl↵</kbd>'}}
-function render(s){const name=verdicts[s.verdict]??s.verdict,cls=s.verdict==='accepted'?'accepted':s.verdict==='infrastructureFailure'?'':'wrong';$('result').innerHTML=`<div class="verdict ${cls}">${name}</div><p>${esc(s.message)}</p><small>Exercício v${s.exerciseVersion} · referência v${s.referenceVersion} · regras v${s.rulesVersion}</small>${s.compilerOutput?`<pre class="output">${esc(s.compilerOutput)}</pre>`:''}`;const t=s.tests?.find(x=>x.difference)||s.tests?.[0];if(t?.inputImageBase64){$('visuals').hidden=false;[['inputImage',t.inputImageBase64],['expectedImage',t.expectedImageBase64],['actualImage',t.actualImageBase64],['diffImage',t.difference?.differenceImageBase64]].forEach(([id,d])=>$(id).src=d?'data:image/png;base64,'+d:'');const d=t.difference;$('metrics').textContent=d?`${d.differentPixels} de ${d.totalPixels} pixels divergentes (${d.percentage.toFixed(4)}%). Primeira divergência: ${d.firstX===null?'—':`(${d.firstX}, ${d.firstY})`}. Delta máximo: ${d.maxChannelDelta}.`:''}else $('visuals').hidden=true}
-async function history(show=true){if(!current)return;const xs=await json('/submissions?exerciseId='+current.id);$('historyList').innerHTML=xs.length?xs.map(s=>`<button class="history-item" data-id="${s.id}"><span><strong>${verdicts[s.verdict]??s.verdict}</strong><small>${new Date(s.submittedAt).toLocaleString('pt-BR')}</small></span><small>v${s.exerciseVersion}/r${s.referenceVersion}</small></button>`).join(''):'<p>Nenhuma submissão ainda.</p>';document.querySelectorAll('.history-item').forEach(x=>x.onclick=async()=>render(await json('/submissions/'+x.dataset.id)));if(show){$('history').hidden=false;$('history').scrollIntoView({behavior:'smooth'})}}
-$('historyButton').onclick=()=>history(true);$('closeHistory').onclick=()=>$('history').hidden=true;$('adminButton').onclick=()=>{$('adminJson').value=JSON.stringify(current,null,2);$('adminDialog').showModal()};$('saveAdmin').onclick=async e=>{e.preventDefault();try{const d=JSON.parse($('adminJson').value);d.version++;const r=await fetch(API+'/admin/exercises/'+d.id,{method:'PUT',headers:{'Content-Type':'application/json','X-Admin-Key':$('adminKey').value},body:JSON.stringify(d)});if(!r.ok)throw Error('Acesso negado ou dados inválidos.');$('adminMessage').textContent='Versão salva; gabaritos incompatíveis foram invalidados.';setTimeout(()=>location.reload(),700)}catch(x){$('adminMessage').textContent=x.message}};
-async function json(path,o){const r=await fetch(API+path,o);if(!r.ok)throw Error((await r.json().catch(()=>({}))).message||`HTTP ${r.status}`);return r.json()}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}start();
+const API = 'http://127.0.0.1:5072/api';
+const $ = id => document.getElementById(id);
+const editorModels = new Map();
+let current;
+var codeEditor;
+let initialEditorModel;
+
+const verdicts = {
+  accepted: 'Resposta correta', wrongAnswer: 'Resposta incorreta', compilationError: 'Erro de compilação',
+  runtimeError: 'Erro de execução', timeLimitExceeded: 'Tempo excedido', memoryLimitExceeded: 'Memória excedida',
+  requirementNotMet: 'Requisito não atendido', infrastructureFailure: 'Falha de infraestrutura'
+};
+
+const editorReady = new Promise((resolve, reject) => {
+  if (typeof window.require !== 'function') {
+    reject(new Error('O carregador do Monaco Editor não foi encontrado.'));
+    return;
+  }
+  window.require.config({ paths: { vs: '/vendor/monaco/vs' } });
+  window.require(['vs/editor/editor.main'], () => {
+    monaco.languages.setLanguageConfiguration('csharp', TtcMonaco.languageConfiguration(monaco));
+    $('editor').textContent = '';
+    codeEditor = monaco.editor.create($('editor'), TtcMonaco.editorOptions(''));
+    initialEditorModel = codeEditor.getModel();
+    codeEditor.onDidChangeModelContent(() => {
+      if (current) localStorage.setItem('ttc-code-' + current.id, codeEditor.getValue());
+    });
+    codeEditor.onDidChangeCursorPosition(updateCursor);
+    codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, submit);
+    resolve(codeEditor);
+  }, error => reject(new Error('Não foi possível carregar o Monaco Editor: ' + error)));
+});
+
+async function start() {
+  try {
+    const exercises = await json('/exercises');
+    $('exerciseCount').textContent = exercises.length;
+    $('exerciseList').innerHTML = exercises.map((exercise, index) =>
+      `<button class="exercise ${index ? '' : 'active'}" data-id="${exercise.id}"><span>${exercise.difficulty} · v${exercise.version}</span><strong>${esc(exercise.title)}</strong></button>`
+    ).join('');
+    document.querySelectorAll('.exercise').forEach(button => {
+      button.onclick = () => load(button.dataset.id, button);
+    });
+    await editorReady;
+    if (exercises.length) await load(exercises[0].id, document.querySelector('.exercise'));
+    $('executorState').innerHTML = '<i></i><span>API conectada · executor isolado sob demanda</span>';
+    $('executorState').classList.add('ok');
+  } catch (error) {
+    $('loading').textContent = error.message || 'Não foi possível conectar à API em 127.0.0.1:5072.';
+  }
+}
+
+async function load(id, button) {
+  await editorReady;
+  current = await json('/exercises/' + id);
+  document.querySelectorAll('.exercise').forEach(item => item.classList.remove('active'));
+  button?.classList.add('active');
+  $('loading').hidden = true;
+  $('problem').hidden = false;
+  $('codeSection').hidden = false;
+  $('title').textContent = current.title;
+  $('statement').textContent = current.statement;
+  $('notes').textContent = current.notes;
+  $('difficulty').textContent = current.difficulty;
+  $('version').textContent = `V${current.version} · REF ${current.referenceVersion} · REGRAS ${current.rulesVersion}`;
+  const rules = current.rules;
+  $('rules').innerHTML = [
+    ['Assinatura', rules.functionSignature], ['Entrada', rules.inputFormat], ['Bordas', rules.borderHandling],
+    ['Aritmética', rules.roundingAndSaturation],
+    ['Comparação', rules.exactComparison ? 'Exata — um pixel divergente reprova' : `Tolerância de ${rules.channelTolerance} por canal`],
+    ['Limites', `${rules.timeLimitMs} ms · ${rules.memoryLimitMb} MB`],
+    ['Memória direta', rules.requiresDirectMemoryAccess ? 'Obrigatória; análise estrutural + testes' : 'Não exigida']
+  ].map(([label, value]) => `<div class="rule"><small>${label}</small>${esc(value)}</div>`).join('');
+  $('tests').innerHTML = current.tests.map(test => `<span>${esc(test.name)} · ${test.width}×${test.height}</span>`).join('');
+  selectExerciseModel(current);
+  $('submitButton').disabled = false;
+  history(false);
+}
+
+function selectExerciseModel(exercise) {
+  let model = editorModels.get(exercise.id);
+  if (!model) {
+    const savedCode = localStorage.getItem('ttc-code-' + exercise.id) ?? exercise.starterCode;
+    const uri = monaco.Uri.parse(`inmemory://ttc-image-judge/${exercise.id}/Solution.cs`);
+    model = monaco.editor.createModel(savedCode, 'csharp', uri);
+    model.updateOptions({ tabSize: 4, insertSpaces: true, trimAutoWhitespace: true });
+    editorModels.set(exercise.id, model);
+  }
+  codeEditor.setModel(model);
+  if (initialEditorModel) {
+    initialEditorModel.dispose();
+    initialEditorModel = null;
+  }
+  updateCursor({ position: codeEditor.getPosition() });
+  requestAnimationFrame(() => { codeEditor.layout(); codeEditor.focus(); });
+}
+
+function updateCursor(event) {
+  const position = event?.position || codeEditor?.getPosition();
+  if (position) $('cursor').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+}
+
+$('resetButton').onclick = async () => {
+  if (current && confirm('Restaurar o código inicial deste exercício?')) {
+    await editorReady;
+    codeEditor.getModel().setValue(current.starterCode);
+    codeEditor.focus();
+  }
+};
+$('submitButton').onclick = submit;
+
+async function submit() {
+  if (!current) return;
+  await editorReady;
+  const button = $('submitButton');
+  button.disabled = true;
+  button.textContent = 'Julgando…';
+  $('result').hidden = false;
+  $('result').innerHTML = '<div class="verdict">Enviando ao executor isolado…</div>';
+  try {
+    // Monaco cuida apenas da edição/colorização; o backend continua sendo a autoridade do julgamento.
+    const submission = await json('/submissions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(TtcMonaco.submissionPayload(current.id, codeEditor))
+    });
+    render(submission);
+    history(false);
+  } catch (error) {
+    $('result').innerHTML = `<div class="verdict wrong">Falha ao enviar</div><p>${esc(error.message)}</p>`;
+  } finally {
+    button.disabled = false;
+    button.innerHTML = 'Enviar solução <kbd>Ctrl↵</kbd>';
+  }
+}
+
+function render(submission) {
+  const name = verdicts[submission.verdict] ?? submission.verdict;
+  const cssClass = submission.verdict === 'accepted' ? 'accepted' : submission.verdict === 'infrastructureFailure' ? '' : 'wrong';
+  $('result').innerHTML = `<div class="verdict ${cssClass}">${name}</div><p>${esc(submission.message)}</p><small>Exercício v${submission.exerciseVersion} · referência v${submission.referenceVersion} · regras v${submission.rulesVersion}</small>${submission.compilerOutput ? `<pre class="output">${esc(submission.compilerOutput)}</pre>` : ''}`;
+  const test = submission.tests?.find(item => item.difference) || submission.tests?.[0];
+  if (test?.inputImageBase64) {
+    $('visuals').hidden = false;
+    [['inputImage', test.inputImageBase64], ['expectedImage', test.expectedImageBase64], ['actualImage', test.actualImageBase64], ['diffImage', test.difference?.differenceImageBase64]]
+      .forEach(([id, data]) => $(id).src = data ? 'data:image/png;base64,' + data : '');
+    const difference = test.difference;
+    $('metrics').textContent = difference
+      ? `${difference.differentPixels} de ${difference.totalPixels} pixels divergentes (${difference.percentage.toFixed(4)}%). Primeira divergência: ${difference.firstX === null ? '—' : `(${difference.firstX}, ${difference.firstY})`}. Delta máximo: ${difference.maxChannelDelta}.`
+      : '';
+  } else $('visuals').hidden = true;
+}
+
+async function history(show = true) {
+  if (!current) return;
+  const submissions = await json('/submissions?exerciseId=' + current.id);
+  $('historyList').innerHTML = submissions.length ? submissions.map(submission =>
+    `<button class="history-item" data-id="${submission.id}"><span><strong>${verdicts[submission.verdict] ?? submission.verdict}</strong><small>${new Date(submission.submittedAt).toLocaleString('pt-BR')}</small></span><small>v${submission.exerciseVersion}/r${submission.referenceVersion}</small></button>`
+  ).join('') : '<p>Nenhuma submissão ainda.</p>';
+  document.querySelectorAll('.history-item').forEach(item => {
+    item.onclick = async () => render(await json('/submissions/' + item.dataset.id));
+  });
+  if (show) { $('history').hidden = false; $('history').scrollIntoView({ behavior: 'smooth' }); }
+}
+
+$('historyButton').onclick = () => history(true);
+$('closeHistory').onclick = () => $('history').hidden = true;
+$('adminButton').onclick = () => { $('adminJson').value = JSON.stringify(current, null, 2); $('adminDialog').showModal(); };
+$('saveAdmin').onclick = async event => {
+  event.preventDefault();
+  try {
+    const exercise = JSON.parse($('adminJson').value);
+    exercise.version++;
+    const response = await fetch(API + '/admin/exercises/' + exercise.id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Admin-Key': $('adminKey').value },
+      body: JSON.stringify(exercise)
+    });
+    if (!response.ok) throw Error('Acesso negado ou dados inválidos.');
+    $('adminMessage').textContent = 'Versão salva; gabaritos incompatíveis foram invalidados.';
+    setTimeout(() => location.reload(), 700);
+  } catch (error) { $('adminMessage').textContent = error.message; }
+};
+
+async function json(path, options) {
+  const response = await fetch(API + path, options);
+  if (!response.ok) throw Error((await response.json().catch(() => ({}))).message || `HTTP ${response.status}`);
+  return response.json();
+}
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+}
+
+start();
