@@ -11,7 +11,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase)));
 builder.WebHost.UseUrls(builder.Configuration["Urls"] ?? "http://127.0.0.1:5073");
 builder.Services.AddSingleton<DirectMemoryAnalyzer>();
-builder.Services.AddSingleton<ContainerExecutionEngine>();
+builder.Services.AddSingleton<IsolatedExecutionEngine>();
 var app = builder.Build();
 
 app.Use(async (context, next) =>
@@ -25,8 +25,8 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.MapGet("/health", (ContainerExecutionEngine engine) => Results.Ok(engine.GetStatus()));
-app.MapPost("/internal/execute", async (ExecuteRequest request, ContainerExecutionEngine engine,
+app.MapGet("/health", (IsolatedExecutionEngine engine) => Results.Ok(engine.GetStatus()));
+app.MapPost("/internal/execute", async (ExecuteRequest request, IsolatedExecutionEngine engine,
     DirectMemoryAnalyzer analyzer, CancellationToken cancellationToken) =>
 {
     var analysis = analyzer.Analyze(request.SourceCode);

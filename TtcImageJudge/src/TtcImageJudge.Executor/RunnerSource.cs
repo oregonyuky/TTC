@@ -5,13 +5,6 @@ namespace TtcImageJudge.Executor;
 
 internal static class RunnerSource
 {
-    public const string Project = """
-        <Project Sdk="Microsoft.NET.Sdk">
-          <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><AllowUnsafeBlocks>true</AllowUnsafeBlocks><UseSystemDrawing>true</UseSystemDrawing></PropertyGroup>
-          <ItemGroup><PackageReference Include="System.Drawing.Common" Version="10.0.0" /></ItemGroup>
-        </Project>
-        """;
-
     public static string Build(ExecuteRequest request)
     {
         var reference = request.Exercise.Tests.Select(t => t.ReferenceCode).FirstOrDefault(code => !string.IsNullOrWhiteSpace(code))
@@ -19,6 +12,9 @@ internal static class RunnerSource
         var tests = string.Join(",\n", request.Exercise.Tests.Select(t =>
             $"new Case({Literal(t.Name)}, {Literal(t.Pattern)}, {t.Width}, {t.Height}, {t.Seed}, {LiteralOrNull(t.InputImageBase64)}, {LiteralOrNull(t.ExpectedImageBase64)})"));
         return $$$"""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
             using System.Drawing;
             using System.Drawing.Imaging;
             using System.Diagnostics;

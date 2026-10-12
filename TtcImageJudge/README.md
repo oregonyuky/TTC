@@ -6,53 +6,41 @@ Juiz local, em português, para praticar processamento de imagens em C#. O aluno
 
 ```text
 Browser :5071 → Web estático
-                 ↓ HTTP local
-              API :5072 → SQLite (exercícios, testes, gabaritos e histórico)
-                 ↓ HTTP local
-         Executor :5073 → Docker Windows sem rede → compilação → processo julgado
+                  ↓ HTTP local
+               API :5072 → SQLite (exercícios, testes, gabaritos e histórico)
+                  ↓ HTTP local
+          Executor :5073 → AppContainer + Job Object → compilador/solução
 ```
 
 - **Web**: ASP.NET Core servindo HTML/CSS/JS sem dependências externas. O editor tem destaque de C#, linhas, Tab e persiste o código em `localStorage`.
 - **API**: endpoints de exercícios/submissões, SQLite e administração. A referência e imagens privadas são removidas da resposta pública. A administração exige loopback e `X-Admin-Key`.
-- **Executor**: serviço separado, ligado somente a `127.0.0.1`. Compila a referência e a solução de verdade em um contêiner Windows descartável. O processo de execução recebe limite de CPU, memória, PIDs e tempo.
+- **Executor**: serviço Windows separado, ligado somente a `127.0.0.1`. Copia um worker .NET autocontido para uma pasta temporária exclusiva e executa compilador, referência e submissão dentro de um AppContainer descartável.
+- **Worker**: usa Roslyn para compilar o wrapper real e carrega o assembly resultante dentro do processo isolado.
 - **Core**: contratos, comparação de pixels e implementação independente usada nos testes unitários.
 
-A separação mantém código não confiável fora da API. O executor não monta o repositório, segredos ou banco: somente uma pasta temporária exclusiva. O contêiner usa `--network none`, é removido ao terminar e sua árvore é encerrada no timeout. A pasta temporária é apagada em `finally`.
+Essa separação mantém código não confiável fora da API. O AppContainer não recebe capacidades de rede, segredos, banco ou acesso aos arquivos da aplicação. Um Job Object limita memória e processos e encerra toda a árvore no timeout. A pasta temporária, perfil, ACL e desktop privado são removidos ao final.
 
 ## Requisitos
 
-- Windows 11/Windows Server compatível com contêineres Windows.
-- SDK **.NET 10.0.401** ou compatível.
-- Para julgamento real: Docker Desktop/Engine alternado para **Windows containers** e compatível com `windowsservercore-ltsc2025`.
+- Windows 10 ou 11 x64, inclusive **Windows Home**.
+- SDK **.NET 10.0.401** ou versão compatível.
+- Não é necessário Hyper-V, Windows Containers nem Docker para julgar.
 
-`System.Drawing.Common 10` é suportado aqui somente no Windows. Por isso frontend/API poderiam ser movidos para outro host, mas o executor é `net10.0-windows` e deve permanecer em Windows. Não habilite o modo Docker em Linux e não publique a porta do executor.
+`System.Drawing.Common 10` é suportado aqui somente no Windows. Por isso o executor tem alvo `net10.0-windows`. O Docker Desktop pode continuar em modo Linux para outros projetos; ele não participa do fluxo do juiz.
 
-## Início rápido seguro
+## Início rápido
 
-Restaure e teste:
+Restaure, compile e teste a solução inteira. Compilar a solução também gera o worker autocontido `win-x64` usado pelo executor:
 
 ```powershell
 dotnet restore .\TtcImageJudge.slnx
-dotnet test .\TtcImageJudge.slnx
+dotnet build .\TtcImageJudge.slnx
+dotnet test .\TtcImageJudge.slnx --no-build
 ```
 
-Sem isolamento configurado, a aplicação funciona para navegação/persistência, mas toda submissão termina em **Falha de infraestrutura**. Isso é intencional: não existe fallback para execução irrestrita.
+Copie os arquivos `appsettings.Local.example.json` da API e do executor para `appsettings.Local.json`. Defina uma chave administrativa forte apenas no arquivo local da API; esses arquivos são ignorados pelo Git.
 
-Para habilitar julgamento real, primeiro construa a imagem em um terminal com Docker em modo Windows:
-
-```powershell
-docker build -t ttc-image-judge-runner:net10-windows .\executor-image
-```
-
-Copie os dois `appsettings.Local.example.json` para `appsettings.Local.json`, defina uma chave administrativa forte e altere `Isolation.Mode` para `DockerWindows`. Arquivos locais são ignorados pelo Git. Alternativamente, use variáveis de ambiente:
-
-```powershell
-$env:Isolation__Mode='DockerWindows'
-$env:Isolation__Image='ttc-image-judge-runner:net10-windows'
-$env:Admin__Key='uma-chave-longa'
-```
-
-Inicie em três terminais, a partir desta pasta:
+Inicie, em três terminais e a partir desta pasta:
 
 ```powershell
 dotnet run --project .\src\TtcImageJudge.Executor --urls http://127.0.0.1:5073
@@ -60,13 +48,28 @@ dotnet run --project .\src\TtcImageJudge.Api --urls http://127.0.0.1:5072
 dotnet run --project .\src\TtcImageJudge.Web --urls http://127.0.0.1:5071
 ```
 
-Abra `http://127.0.0.1:5071`.
+Abra `http://127.0.0.1:5071`. O endpoint `http://127.0.0.1:5073/health` deve informar `configured`, `AppContainer + Job Object` e `worker: autocontido`.
+
+Em uma publicação, coloque a saída autocontida do worker em uma pasta `worker` ao lado do executor ou configure `Isolation:WorkerPath` com seu caminho. Se o worker ou as APIs nativas não estiverem disponíveis, o executor bloqueia a submissão e retorna **Falha de infraestrutura**; não existe fallback irrestrito.
+
+## Isolamento no Windows Home
+
+O executor usa recursos presentes no Windows Home:
+
+1. cria um perfil AppContainer único por submissão, sem capacidade de rede;
+2. cria um desktop privado para o processo LowBox e concede ao SID efêmero somente os acessos necessários;
+3. concede acesso total apenas à pasta temporária exclusiva da tarefa;
+4. inicia o worker suspenso, atribui-o ao Job Object e só então libera a execução;
+5. aplica limites de memória, quantidade de processos e tempo e mata o Job Object inteiro no timeout;
+6. remove a ACL temporária, fecha o desktop, apaga o perfil e limpa os arquivos em `finally`.
+
+Na primeira tarefa, o executor habilita `HKCU\Console\LowBoxConsoleEnabled=1`, configuração recomendada pela ferramenta de referência da Microsoft para processos de console AppContainer. Nenhuma permissão administrativa é necessária. AppContainer é uma barreira de segurança do Windows, mas não é uma VM; esta primeira versão é deliberadamente local e não deve ser exposta como serviço público multiusuário.
 
 ## Exercício inicial e testes
 
-O seed inclui “Filtro passa-baixa por média 5 × 5”, com assinatura, formato 24bpp, bordas, divisão inteira, comparação exata, timeout, memória e acesso direto explicitados. A observação **K = 9** é registrada, mas não aplicada porque seu significado não foi esclarecido.
+O seed inclui “Filtro passa-baixa por média 5 × 5” com assinatura, formato 24bpp, bordas, divisão inteira, comparação exata, timeout, memória e acesso direto explicitados. A observação **K = 9** é registrada, mas não aplicada porque seu significado não foi esclarecido.
 
-Os casos determinísticos cobrem constante, gradiente, impulso central, padrão alternado, ruído com semente fixa, imagem menor que 5 × 5 e largura 5 (stride 24bpp com padding). A referência usa `LockBits`, `Scan0`, ponteiros e o `Stride` real, preservando entrada e bordas. Ela é compilada e executada no mesmo ambiente isolado antes da solução; falhas nela são **Falha de infraestrutura**.
+Os casos determinísticos cobrem constante, gradiente, impulso central, padrão alternado, ruído com semente fixa, imagem menor que 5 × 5 e largura 5 (stride 24bpp com padding). A referência usa `LockBits`, `Scan0`, ponteiros e o `Stride` real, preservando entrada e bordas. Ela é compilada e executada dentro do mesmo AppContainer; falhas nela são **Falha de infraestrutura**.
 
 O diretório `samples/` contém uma solução correta com ponteiros e casos intencionalmente errados: divisor 9, janela 3 × 3, stride ignorado, bordas alteradas, erro de compilação e loop infinito.
 
@@ -74,36 +77,29 @@ O comparador trabalha sobre bitmaps decodificados, confere dimensões e R/G/B e 
 
 ## Versionamento e gabaritos
 
-Cada submissão grava as versões do exercício, referência e regras. Gabaritos gerados são armazenados em `expected_artifacts` com SHA-256 e a chave `(teste, versão da referência, versão das regras)`. Uma alteração administrativa remove caches incompatíveis; o executor também recalcula a referência no julgamento, evitando aceitar um artefato obsoleto. Imagens esperadas enviadas diretamente ficam no payload persistido do exercício.
+Cada submissão grava as versões do exercício, referência e regras. Gabaritos gerados são armazenados em `expected_artifacts` com SHA-256 e a chave `(teste, versão da referência, versão das regras)`. Uma alteração administrativa remove caches incompatíveis; o executor também recalcula a referência no julgamento. Imagens esperadas enviadas diretamente ficam no payload persistido do exercício.
 
-Dois modos de teste são modelados por `ExpectedOutputMode`: `UploadedImage` e `ReferenceImplementation`. A versão inicial usa referência C#; a API aceita os dois na área administrativa.
+Os dois modos de teste são `UploadedImage` e `ReferenceImplementation`. A versão inicial usa referência C#; a API aceita ambos na área administrativa.
 
 ## Segurança e limites conhecidos
 
-- O modo padrão é `Blocked`. Se Docker, imagem ou gabarito falharem, o aluno recebe **Falha de infraestrutura**, nunca resposta incorreta.
-- O compilador roda em um contêiner sem rede, com 768 MB; o binário é executado em outro contêiner com os limites do exercício. O host mata e remove o contêiner pelo nome ao atingir o timeout.
-- O Docker identifica OOM como memória excedida quando retorna código 137 ou mensagem equivalente. Outros encerramentos ambíguos permanecem falha de infraestrutura.
-- A análise Roslyn exige método `unsafe`, tipo ponteiro, par `LockBits/UnlockBits` e acessos `Scan0/Stride`. Isso é análise estrutural, não prova uso correto; a correção visual continua separada e a interface informa essa limitação.
-- Para uma implantação multiusuário, adicione fila, identidade e um host executor dedicado. Esta versão é deliberadamente local.
+- O compilador e o código submetido executam no AppContainer; restauração de pacotes pelo código do aluno não é permitida.
+- O AppContainer não recebe `internetClient`; além disso, executor e API escutam somente no loopback.
+- A detecção de memória excedida usa o pico do Job Object. Encerramentos que não podem ser atribuídos com segurança ao aluno permanecem falha de infraestrutura.
+- A análise Roslyn exige método `unsafe`, tipo ponteiro, par `LockBits/UnlockBits` e acessos `Scan0/Stride`. Isso é análise estrutural, não prova uso correto; a correção visual continua separada.
+- Para implantação pública/multiusuário, ainda seriam necessários host dedicado, fila, autenticação de usuários, limitação de taxa e defesa operacional adicional.
 
 ## Validação neste ambiente
 
-Foi validado no Windows com .NET 10:
+Validado no Windows 11 Home, build 26200, com .NET 10 em 12/10/2026:
 
-- build completo sem avisos;
-- testes unitários da referência independente, impulso `255 / 25 = 10`, preservação de bordas/imagens pequenas e comparação exata;
-- variantes matemáticas erradas rejeitadas pelo comparador;
-- análise estrutural não aceita apenas a palavra `unsafe`;
-- seed e histórico sobrevivem à reabertura do SQLite;
-- Web responde e contém o editor;
-- executor bloqueado informa falha de infraestrutura.
+- solução completa compilada sem avisos ou erros;
+- testes unitários da referência independente, preservação de bordas/imagens pequenas, comparação exata, análise estrutural e persistência SQLite;
+- `CorrectPointerSolution.cs` → **Resposta correta**;
+- `WrongDivideBy9.cs`, `Wrong3x3.cs`, `WrongIgnoreStride.cs` e `WrongBorders.cs` → **Resposta incorreta**;
+- `CompilationError.cs` → **Erro de compilação** com diagnóstico Roslyn;
+- `TimeLimitExceeded.cs` → **Tempo excedido**, com encerramento da árvore pelo Job Object;
+- indisponibilidade do executor → **Falha de infraestrutura**, não resposta incorreta;
+- histórico e gabaritos persistidos no SQLite.
 
-Não havia Docker Windows disponível/configurado durante a implementação. Portanto, a compilação dentro do contêiner, os exemplos de erro de compilação/timeout e `System.Drawing.Common` dentro da imagem **não foram declarados como executados**. Rode a matriz abaixo após construir a imagem:
-
-```powershell
-# enviar, pela interface, cada arquivo de samples/ e confirmar:
-# CorrectPointerSolution.cs → Resposta correta
-# Wrong*.cs               → Resposta incorreta
-# CompilationError.cs     → Erro de compilação
-# TimeLimitExceeded.cs    → Tempo excedido
-```
+O Docker Linux instalado na máquina não foi usado por nenhuma dessas validações.

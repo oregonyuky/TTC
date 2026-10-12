@@ -4,6 +4,7 @@
     <Project Path="src/TtcImageJudge.Core/TtcImageJudge.Core.csproj" />
     <Project Path="src/TtcImageJudge.Executor/TtcImageJudge.Executor.csproj" />
     <Project Path="src/TtcImageJudge.Web/TtcImageJudge.Web.csproj" />
+    <Project Path="src/TtcImageJudge.Worker/TtcImageJudge.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TtcImageJudge.Tests/TtcImageJudge.Tests.csproj" />
