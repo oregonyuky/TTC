@@ -7,9 +7,9 @@ public static class SeedData
     public static ExerciseDetails InitialExercise { get; } = new(
         Guid.Parse("b0f45a61-30e1-4e04-a90c-110ab7e6f117"), "media-5x5-memoria-direta",
         "Filtro passa-baixa por média 5 × 5",
-        "Implemente um algoritmo com acesso direto à memória que realize a filtragem espacial passa-baixa por média em uma imagem em tons de cinza, usando uma vizinhança 5 × 5.",
-        "A menção original a “K = 9” não tem significado esclarecido e não é aplicada neste exercício.",
-        "Intermediário", 2, 2, 2,
+        "Implemente um algoritmo com acesso direto à memória que realize a filtragem espacial passa-baixa por média em uma imagem em tons de cinza, usando uma vizinhança 5 × 5. O enunciado original também informa: K = 9.",
+        "K = 9 faz parte do enunciado original, mas o significado de K não foi especificado; por isso, nenhuma operação adicional baseada em K é aplicada.",
+        "Intermediário", 3, 2, 2,
         new ExerciseRules("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)",
             "imgSrc e imgDest em Bitmap 24bppRgb, com as mesmas dimensões; R, G e B iguais. imgDest começa como uma cópia de imgSrc",
             "Processar somente vizinhanças completas; preservar duas linhas e colunas em cada borda",

@@ -104,6 +104,35 @@ public sealed class ImageJudgeTests
     }
 
     [Fact]
+    public async Task Seed_text_update_preserves_reference_and_rules_versions()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ttc-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+                { ["Database:Path"] = Path.Combine(root, "judge.db") }).Build();
+            var env = new FakeEnvironment(root);
+            var first = new JudgeDatabase(config, env); await first.InitializeAsync();
+            var outdated = SeedData.InitialExercise with
+            {
+                Statement = "Enunciado anterior.", Notes = "Observação anterior.",
+                Version = 2, ReferenceVersion = 7, RulesVersion = 8
+            };
+            await first.UpsertExerciseAsync(outdated, false);
+
+            var second = new JudgeDatabase(config, env); await second.InitializeAsync();
+            var refreshed = await second.GetExerciseAsync(outdated.Id);
+
+            Assert.Contains("K = 9", refreshed!.Statement);
+            Assert.Equal(3, refreshed.Version);
+            Assert.Equal(7, refreshed.ReferenceVersion);
+            Assert.Equal(8, refreshed.RulesVersion);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public async Task Sqlite_persists_history_and_seed_across_instances()
     {
         var root = Path.Combine(Path.GetTempPath(), "ttc-test-" + Guid.NewGuid().ToString("N"));
@@ -130,6 +159,7 @@ public sealed class ImageJudgeTests
             Assert.Equal(submission.Id, (await second.ListSubmissionsAsync(exercise.Id)).Single().Id);
             var migrated = await second.GetExerciseAsync(exercise.Id);
             Assert.Equal("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)", migrated!.Rules.FunctionSignature);
+            Assert.Contains("K = 9", migrated.Statement);
             Assert.StartsWith("using System.Drawing;", migrated.StarterCode);
             Assert.Equal(10, migrated.Version);
         }

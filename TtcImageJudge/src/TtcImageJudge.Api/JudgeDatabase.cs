@@ -61,6 +61,18 @@ public sealed class JudgeDatabase(IConfiguration configuration, IWebHostEnvironm
                 };
                 await UpsertExerciseAsync(migrated, true, connection);
             }
+            else if (stored.Version < seed.Version)
+            {
+                var refreshed = stored with
+                {
+                    Title = seed.Title,
+                    Statement = seed.Statement,
+                    Notes = seed.Notes,
+                    Difficulty = seed.Difficulty,
+                    Version = seed.Version
+                };
+                await UpsertExerciseAsync(refreshed, false, connection);
+            }
         }
     }
 
