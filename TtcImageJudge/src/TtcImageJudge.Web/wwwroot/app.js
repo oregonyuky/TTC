@@ -59,7 +59,7 @@ const editorReady = new Promise((resolve, reject) => {
       codeEditor = monaco.editor.create($('editor'), TtcMonaco.editorOptions(''));
       initialEditorModel = codeEditor.getModel();
       codeEditor.onDidChangeModelContent(() => {
-        if (current) localStorage.setItem('ttc-code-' + current.id, codeEditor.getValue());
+        if (current) localStorage.setItem(codeStorageKey(current), codeEditor.getValue());
       });
       codeEditor.onDidChangeCursorPosition(updateCursor);
       codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, submit);
@@ -119,13 +119,14 @@ async function load(id, button) {
 }
 
 function selectExerciseModel(exercise) {
-  let model = editorModels.get(exercise.id);
+  const modelKey = `${exercise.id}-v${exercise.version}`;
+  let model = editorModels.get(modelKey);
   if (!model) {
-    const savedCode = localStorage.getItem('ttc-code-' + exercise.id) ?? exercise.starterCode;
-    const uri = monaco.Uri.parse(`inmemory://ttc-image-judge/${exercise.id}/Solution.cs`);
+    const savedCode = localStorage.getItem(codeStorageKey(exercise)) ?? exercise.starterCode;
+    const uri = monaco.Uri.parse(`inmemory://ttc-image-judge/${exercise.id}/v${exercise.version}/Solution.cs`);
     model = monaco.editor.createModel(savedCode, 'csharp', uri);
     model.updateOptions({ tabSize: 4, insertSpaces: true, trimAutoWhitespace: true });
-    editorModels.set(exercise.id, model);
+    editorModels.set(modelKey, model);
   }
   codeEditor.setModel(model);
   if (initialEditorModel) {
@@ -134,6 +135,10 @@ function selectExerciseModel(exercise) {
   }
   updateCursor({ position: codeEditor.getPosition() });
   requestAnimationFrame(() => { codeEditor.layout(); codeEditor.focus(); });
+}
+
+function codeStorageKey(exercise) {
+  return `ttc-code-${exercise.id}-v${exercise.version}`;
 }
 
 function updateCursor(event) {

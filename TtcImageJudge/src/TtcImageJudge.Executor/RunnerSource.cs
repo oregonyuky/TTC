@@ -8,7 +8,7 @@ internal static class RunnerSource
     public static string Build(ExecuteRequest request)
     {
         var reference = request.Exercise.Tests.Select(t => t.ReferenceCode).FirstOrDefault(code => !string.IsNullOrWhiteSpace(code))
-                        ?? "public static Bitmap Blur5x5(Bitmap img) => throw new InvalidOperationException(\"Teste sem referência.\");";
+                        ?? "public static void Blur5x5(Bitmap imgSrc, Bitmap imgDest) => throw new InvalidOperationException(\"Teste sem referência.\");";
         var tests = string.Join(",\n", request.Exercise.Tests.Select(t =>
             $"new Case({Literal(t.Name)}, {Literal(t.Pattern)}, {t.Width}, {t.Height}, {t.Seed}, {LiteralOrNull(t.InputImageBase64)}, {LiteralOrNull(t.ExpectedImageBase64)})"));
         return $$$"""
@@ -37,11 +37,11 @@ internal static class RunnerSource
                 foreach (var c in cases)
                 {
                   using var input = Create(c); using var original = (Bitmap)input.Clone(); Bitmap expected;
-                  try { expected = c.Expected is null ? ReferenceSolution.Blur5x5(input) : Load(c.Expected); }
+                  try { if (c.Expected is null) { expected = Copy(input); ReferenceSolution.Blur5x5(input, expected); } else expected = Load(c.Expected); }
                   catch (Exception ex) { Write(7, "Falha no gabarito: " + ex.Message, results); return 70; }
                   if (!Same(input, original, 0).ok) { Write(7, "A referência modificou a entrada.", results); return 70; }
-                  var sw = Stopwatch.StartNew(); Bitmap actual;
-                  try { actual = Submission.Blur5x5(input); }
+                  var sw = Stopwatch.StartNew(); Bitmap actual = Copy(input);
+                  try { Submission.Blur5x5(input, actual); }
                   catch (Exception ex) { results.Add(new(c.Name,3,ex.ToString(),sw.ElapsedMilliseconds,null,To64(input),To64(expected),null)); Write(3,"Erro de execução.",results); return 3; }
                   sw.Stop();
                   using (expected) using (actual)
@@ -56,6 +56,7 @@ internal static class RunnerSource
                 Write(0,"Passou em todos os testes e requisitos.",results); return 0;
               }
               static Bitmap Create(Case c) { if(c.Input is not null)return Load(c.Input);var b=new Bitmap(c.Width,c.Height,PixelFormat.Format24bppRgb); var r=new Random(c.Seed); for(int y=0;y<c.Height;y++)for(int x=0;x<c.Width;x++){int v=c.Pattern switch{"constant"=>127,"gradient"=>(x*31+y*17)%256,"impulse"=>x==c.Width/2&&y==c.Height/2?255:0,"checkerboard"=>(x+y)%2*255,"noise"=>r.Next(256),_=>0}; b.SetPixel(x,y,Color.FromArgb(v,v,v));} return b; }
+              static Bitmap Copy(Bitmap value) => value.Clone(new Rectangle(0,0,value.Width,value.Height),PixelFormat.Format24bppRgb);
               static Bitmap Load(string value){using var m=new MemoryStream(Convert.FromBase64String(value));using var decoded=new Bitmap(m);return decoded.Clone(new Rectangle(0,0,decoded.Width,decoded.Height),PixelFormat.Format24bppRgb);}
               static (bool ok,int count,int? x,int? y,int max) Same(Bitmap a,Bitmap b,int tolerance) { if(a.Width!=b.Width||a.Height!=b.Height)return(false,Math.Max(a.Width*a.Height,b.Width*b.Height),0,0,255);int count=0,max=0;int? fx=null,fy=null;for(int y=0;y<a.Height;y++)for(int x=0;x<a.Width;x++){var p=a.GetPixel(x,y);var q=b.GetPixel(x,y);var d=Math.Max(Math.Abs(p.R-q.R),Math.Max(Math.Abs(p.G-q.G),Math.Abs(p.B-q.B)));max=Math.Max(max,d);if(d>tolerance){count++;fx??=x;fy??=y;}}return(count==0,count,fx,fy,max); }
               static string To64(Bitmap b){using var m=new MemoryStream();b.Save(m,ImageFormat.Png);return Convert.ToBase64String(m.ToArray());}

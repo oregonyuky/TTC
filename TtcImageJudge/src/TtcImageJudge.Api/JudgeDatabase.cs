@@ -35,8 +35,33 @@ public sealed class JudgeDatabase(IConfiguration configuration, IWebHostEnvironm
               PRIMARY KEY(test_id, reference_version, rules_version));
             """;
         await command.ExecuteNonQueryAsync();
-        if ((long)(await ScalarAsync(connection, "SELECT COUNT(*) FROM exercises") ?? 0L) == 0)
-            await UpsertExerciseAsync(SeedData.InitialExercise, false, connection);
+        var seed = SeedData.InitialExercise;
+        var seedQuery = connection.CreateCommand();
+        seedQuery.CommandText = "SELECT payload_json FROM exercises WHERE id=$id";
+        seedQuery.Parameters.AddWithValue("$id", seed.Id.ToString());
+        var storedJson = await seedQuery.ExecuteScalarAsync() as string;
+        if (storedJson is null)
+        {
+            await UpsertExerciseAsync(seed, false, connection);
+        }
+        else
+        {
+            var stored = JsonSerializer.Deserialize<ExerciseDetails>(storedJson, JsonOptions)!;
+            if (!string.Equals(stored.Rules.FunctionSignature, seed.Rules.FunctionSignature, StringComparison.Ordinal))
+            {
+                var tests = seed.Tests.Select((test, index) => index < stored.Tests.Count
+                    ? test with { Id = stored.Tests[index].Id }
+                    : test).ToArray();
+                var migrated = seed with
+                {
+                    Version = Math.Max(seed.Version, stored.Version + 1),
+                    ReferenceVersion = Math.Max(seed.ReferenceVersion, stored.ReferenceVersion + 1),
+                    RulesVersion = Math.Max(seed.RulesVersion, stored.RulesVersion + 1),
+                    Tests = tests
+                };
+                await UpsertExerciseAsync(migrated, true, connection);
+            }
+        }
     }
 
     public async Task<IReadOnlyList<ExerciseSummary>> ListExercisesAsync()

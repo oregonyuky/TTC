@@ -72,11 +72,11 @@ public sealed class ImageJudgeTests
     public void Structured_requirement_analysis_does_not_accept_unsafe_keyword_alone()
     {
         var analyzer = new DirectMemoryAnalyzer();
-        Assert.False(analyzer.Analyze("public static unsafe Bitmap Blur5x5(Bitmap img) => img;").Met);
+        Assert.False(analyzer.Analyze("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest) { }").Met);
         Assert.True(analyzer.Analyze("""
-            public static unsafe Bitmap Blur5x5(Bitmap img) {
-              BitmapData d = img.LockBits(default, default, default); byte* p=(byte*)d.Scan0;
-              int s=d.Stride; img.UnlockBits(d); return img;
+            public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest) {
+              BitmapData d = imgSrc.LockBits(default, default, default); byte* p=(byte*)d.Scan0;
+              int s=d.Stride; imgSrc.UnlockBits(d);
             }
             """).Met);
     }
@@ -85,9 +85,22 @@ public sealed class ImageJudgeTests
     public void Generated_runner_is_valid_csharp_syntax()
     {
         var request = new ExecuteRequest(Guid.NewGuid(), SeedData.InitialExercise, Samples.Reference);
-        var diagnostics = CSharpSyntaxTree.ParseText(RunnerSource.Build(request)).GetDiagnostics()
+        var source = RunnerSource.Build(request);
+        var tree = CSharpSyntaxTree.ParseText(source);
+        var diagnostics = tree.GetDiagnostics()
             .Where(item => item.Severity == DiagnosticSeverity.Error).ToArray();
         Assert.Empty(diagnostics);
+        var paths = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
+            .Split(Path.PathSeparator).Concat(Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+        var compilation = CSharpCompilation.Create("GeneratedRunner", [tree],
+            paths.Select(path => MetadataReference.CreateFromFile(path)),
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true));
+        Assert.Empty(compilation.GetDiagnostics().Where(item => item.Severity == DiagnosticSeverity.Error));
+        Assert.Contains("Submission.Blur5x5(input, actual);", source);
+        Assert.Contains("ReferenceSolution.Blur5x5(input, expected);", source);
+        Assert.Contains("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)\n{",
+            Samples.Starter.Replace("\r", ""));
     }
 
     [Fact]
@@ -101,12 +114,24 @@ public sealed class ImageJudgeTests
                 { ["Database:Path"] = Path.Combine(root, "judge.db") }).Build();
             var env = new FakeEnvironment(root);
             var first = new JudgeDatabase(config, env); await first.InitializeAsync();
-            var exercise = (await first.ListExercisesAsync()).Single();
+            var legacyRules = SeedData.InitialExercise.Rules with
+                { FunctionSignature = "public static unsafe Bitmap Blur5x5(Bitmap img)" };
+            var legacy = SeedData.InitialExercise with
+            {
+                Version = 9, ReferenceVersion = 4, RulesVersion = 5, Rules = legacyRules,
+                StarterCode = "public static unsafe Bitmap Blur5x5(Bitmap img) => img;"
+            };
+            await first.UpsertExerciseAsync(legacy, false);
+            var exercise = (await first.ListExercisesAsync()).Single(item => item.Id == SeedData.InitialExercise.Id);
             var submission = new SubmissionView(Guid.NewGuid(), exercise.Id, DateTimeOffset.UtcNow,
                 Verdict.InfrastructureFailure, "isolamento ausente", "", 1, 1, 1, "code", []);
             await first.SaveSubmissionAsync(submission);
             var second = new JudgeDatabase(config, env); await second.InitializeAsync();
             Assert.Equal(submission.Id, (await second.ListSubmissionsAsync(exercise.Id)).Single().Id);
+            var migrated = await second.GetExerciseAsync(exercise.Id);
+            Assert.Equal("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)", migrated!.Rules.FunctionSignature);
+            Assert.StartsWith("using System.Drawing;", migrated.StarterCode);
+            Assert.Equal(10, migrated.Version);
         }
         finally { Directory.Delete(root, true); }
     }

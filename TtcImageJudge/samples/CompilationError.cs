@@ -1,2 +1,2 @@
 using System.Drawing;
-public static unsafe Bitmap Blur5x5(Bitmap img) { isto nao compila }
+public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest) { isto nao compila }

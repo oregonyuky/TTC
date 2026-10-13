@@ -1,18 +1,17 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 
-public static unsafe Bitmap Blur5x5(Bitmap img)
+public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)
 {
-    var output = img.Clone(new Rectangle(0, 0, img.Width, img.Height), PixelFormat.Format24bppRgb);
-    var rectangle = new Rectangle(0, 0, img.Width, img.Height);
-    var sourceData = img.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-    var outputData = output.LockBits(rectangle, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+    var rectangle = new Rectangle(0, 0, imgSrc.Width, imgSrc.Height);
+    var sourceData = imgSrc.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+    var outputData = imgDest.LockBits(rectangle, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
     try
     {
         byte* source = (byte*)sourceData.Scan0;
         byte* target = (byte*)outputData.Scan0;
-        for (var y = 2; y < img.Height - 2; y++)
-        for (var x = 2; x < img.Width - 2; x++)
+        for (var y = 2; y < imgSrc.Height - 2; y++)
+        for (var x = 2; x < imgSrc.Width - 2; x++)
         {
             var sum = 0;
             for (var dy = -2; dy <= 2; dy++)
@@ -22,6 +21,5 @@ public static unsafe Bitmap Blur5x5(Bitmap img)
             pixel[0] = pixel[1] = pixel[2] = value;
         }
     }
-    finally { img.UnlockBits(sourceData); output.UnlockBits(outputData); }
-    return output;
+    finally { imgSrc.UnlockBits(sourceData); imgDest.UnlockBits(outputData); }
 }

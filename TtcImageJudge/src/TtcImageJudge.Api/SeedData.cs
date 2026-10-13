@@ -9,9 +9,9 @@ public static class SeedData
         "Filtro passa-baixa por média 5 × 5",
         "Implemente um algoritmo com acesso direto à memória que realize a filtragem espacial passa-baixa por média em uma imagem em tons de cinza, usando uma vizinhança 5 × 5.",
         "A menção original a “K = 9” não tem significado esclarecido e não é aplicada neste exercício.",
-        "Intermediário", 1, 1, 1,
-        new ExerciseRules("public static unsafe Bitmap Blur5x5(Bitmap img)",
-            "Bitmap 24bppRgb; R, G e B iguais",
+        "Intermediário", 2, 2, 2,
+        new ExerciseRules("public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)",
+            "imgSrc e imgDest em Bitmap 24bppRgb, com as mesmas dimensões; R, G e B iguais. imgDest começa como uma cópia de imgSrc",
             "Processar somente vizinhanças completas; preservar duas linhas e colunas em cada borda",
             "Soma inteira dos 25 valores, divisão inteira por 25; resultado já no intervalo 0–255",
             true, 0, 2_000, 256, true),
@@ -34,9 +34,9 @@ public static class Samples
         using System.Drawing;
         using System.Drawing.Imaging;
 
-        public static unsafe Bitmap Blur5x5(Bitmap img)
+        public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)
         {
-            // Crie uma saída 24bpp, use LockBits/Stride e preserve a entrada.
+            // Escreva o resultado em imgDest, use LockBits/Stride e preserve imgSrc.
             throw new NotImplementedException();
         }
         """;
@@ -45,18 +45,17 @@ public static class Samples
         using System.Drawing;
         using System.Drawing.Imaging;
 
-        public static unsafe Bitmap Blur5x5(Bitmap img)
+        public static unsafe void Blur5x5(Bitmap imgSrc, Bitmap imgDest)
         {
-            var output = img.Clone(new Rectangle(0, 0, img.Width, img.Height), PixelFormat.Format24bppRgb);
-            var area = new Rectangle(0, 0, img.Width, img.Height);
-            var sourceData = img.LockBits(area, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            var outputData = output.LockBits(area, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            var area = new Rectangle(0, 0, imgSrc.Width, imgSrc.Height);
+            var sourceData = imgSrc.LockBits(area, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            var outputData = imgDest.LockBits(area, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
             try
             {
                 byte* source = (byte*)sourceData.Scan0;
                 byte* target = (byte*)outputData.Scan0;
-                for (int y = 2; y < img.Height - 2; y++)
-                for (int x = 2; x < img.Width - 2; x++)
+                for (int y = 2; y < imgSrc.Height - 2; y++)
+                for (int x = 2; x < imgSrc.Width - 2; x++)
                 {
                     int sum = 0;
                     for (int dy = -2; dy <= 2; dy++)
@@ -67,8 +66,7 @@ public static class Samples
                     pixel[0] = pixel[1] = pixel[2] = value;
                 }
             }
-            finally { img.UnlockBits(sourceData); output.UnlockBits(outputData); }
-            return output;
+            finally { imgSrc.UnlockBits(sourceData); imgDest.UnlockBits(outputData); }
         }
         """;
 }

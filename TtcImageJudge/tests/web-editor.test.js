@@ -44,6 +44,7 @@ test('versiona os arquivos do Monaco e informa falhas de carregamento', () => {
   assert.match(app, /urlArgs: 'v=0\.52\.2-2'/);
   assert.match(app, /O carregamento excedeu 15 segundos/);
   assert.match(app, /showEditorLoadError/);
+  assert.match(app, /ttc-code-\$\{exercise\.id\}-v\$\{exercise\.version\}/);
 });
 
 test('configura o código correto como gerador da imagem esperada', () => {
@@ -51,12 +52,12 @@ test('configura o código correto como gerador da imagem esperada', () => {
     { name: 'Gradiente', expectedOutputMode: 'uploadedImage', expectedImageBase64: 'imagem-antiga', referenceCode: null },
     { name: 'Ruído', expectedOutputMode: 'uploadedImage', expectedImageBase64: 'outra-imagem', referenceCode: null }
   ] };
-  adminConfig.setReferenceCode(exercise, 0, 'public static Bitmap Blur5x5(Bitmap img) => img;');
+  adminConfig.setReferenceCode(exercise, 0, 'public static void Blur5x5(Bitmap imgSrc, Bitmap imgDest) { }');
   assert.deepEqual(exercise.tests.map(test => test.expectedOutputMode),
     ['referenceImplementation', 'referenceImplementation']);
   assert.deepEqual(exercise.tests.map(test => test.expectedImageBase64), [null, null]);
-  assert.equal(exercise.tests[1].referenceCode, 'public static Bitmap Blur5x5(Bitmap img) => img;');
-  assert.equal(adminConfig.referenceCode(exercise, 0), 'public static Bitmap Blur5x5(Bitmap img) => img;');
+  assert.equal(exercise.tests[1].referenceCode, 'public static void Blur5x5(Bitmap imgSrc, Bitmap imgDest) { }');
+  assert.equal(adminConfig.referenceCode(exercise, 0), 'public static void Blur5x5(Bitmap imgSrc, Bitmap imgDest) { }');
 });
 
 test('substitui o upload da imagem esperada pelo editor C# administrativo', () => {
